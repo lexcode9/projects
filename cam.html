@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Cam7</title>
+  <title>Cam8</title>
   <style>
     body {
       margin: 0;
@@ -9,26 +9,27 @@
     }
     #video {
       position: absolute;
-      width: 320px;  /* Half of 640 */
-      height: 240px; /* Half of 480 */
+      width: 320px;  /* Half resolution */
+      height: 240px;
       transform: scaleX(-1);
       object-fit: cover;
     }
     #circle {
       position: absolute;
-      width: 30px;  /* Half of 20px */
-      height: 30px;
-      background: red;
-      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 24px;
       pointer-events: none;
+      user-select: none;
+      /* No background or border-radius needed for emoji */
     }
   </style>
 </head>
 <body>
   <video id="video" autoplay muted playsinline></video>
-  <div id="circle"></div>
+  <div id="circle">🍌</div>
 
-  <!-- Light TF.js version (v1.7.4, CPU-friendly) -->
+  <!-- TensorFlow.js v1.7.4 for better CPU perf -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.7.4/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
@@ -39,7 +40,7 @@
     async function startCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 320, height: 240 } // smaller resolution
+          video: { width: 320, height: 240 }
         });
         video.srcObject = stream;
       } catch (err) {
@@ -62,14 +63,16 @@
       if (result) {
         const nose = result.landmarks.getNose()[3];
         const rect = video.getBoundingClientRect();
+
+        // Mirror X coordinate because video is flipped horizontally
         const mirroredX = rect.left + (video.videoWidth - nose.x) * (rect.width / video.videoWidth);
         const adjustedY = rect.top + nose.y * (rect.height / video.videoHeight);
 
-        circle.style.left = `${mirroredX - 5}px`; // 5 = half of 10px width
-        circle.style.top = `${adjustedY - 5}px`;
+        circle.style.left = `${mirroredX - 12}px`; // 12 = half emoji size
+        circle.style.top = `${adjustedY - 12}px`;
       }
 
-      setTimeout(trackNose, 300); // slower = lower CPU
+      setTimeout(trackNose, 300); // slower detection to save CPU
     }
 
     async function init() {
