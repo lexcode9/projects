@@ -1,54 +1,89 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Cam9</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cam18</title>
   <style>
-	  html, body {
-		margin: 0;
-		padding: 0;
-		height: 100%;
-		overflow: hidden;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: #000;
-	  }
-
-	  #video {
-		width: 240px;
-		height: 320px;
-		transform: scaleX(-1);
-		object-fit: cover;
-		position: relative;
-		z-index: 1;
-	  }
-
-	  #circle {
-		position: absolute;
-		font-size: 24px;
-		width: 24px;
-		height: 24px;
-		pointer-events: none;
-		user-select: none;
-		z-index: 2;
-	  }
-	</style>
+    html, body {
+      margin: 0; padding: 0;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+    #container {
+      position: relative;
+      width: 240px;
+      height: 320px;
+    }
+    #video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1); /* mirror */
+    }
+    #emoji {
+      position: absolute;
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      user-select: none;
+      cursor: grab;
+    }
+    #mouth-box {
+      position: absolute;
+      border: 2px solid red;
+      pointer-events: none;
+      display: none;
+    }
+  </style>
 </head>
 <body>
-  <video id="video" autoplay muted playsinline></video>
-  <div id="circle">🍌</div>
+  <div id="container">
+    <video id="video" autoplay muted playsinline></video>
+    <div id="emoji">🍌</div>
+    <div id="mouth-box"></div>
+  </div>
 
+  <!-- TensorFlow.js and Face API -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.7.4/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
   <script>
     const video = document.getElementById('video');
-    const circle = document.getElementById('circle');
+    const emoji = document.getElementById('emoji');
+    const mouthBox = document.getElementById('mouth-box');
+    const container = document.getElementById('container');
 
+    const EMOJIS = ['🍌', '🐔'];
+    let currentEmojiIndex = 0;
+
+    // Speak a word
+    function speak(word) {
+	  const msg = new SpeechSynthesisUtterance(word);
+	  const voices = window.speechSynthesis.getVoices();
+
+	  // Pick a deeper male voice (this one is usually present on Chrome)
+	  const voice = voices.find(v => v.name === 'Google UK English Male');
+
+	  // Fallback if not found
+	  msg.voice = voice || voices.find(v => v.name.includes('Male')) || voices[0];
+
+	  msg.lang = 'en-GB';  // Match the voice language
+	  msg.rate = 0.9;      // Slightly slower for depth
+	  msg.pitch = 0.1;     // Lower pitch for deeper tone
+
+	  window.speechSynthesis.speak(msg);
+	}
+
+    // Start camera
     async function startCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 320, height: 240 }
+          video: { width: 240, height: 320 }
         });
         video.srcObject = stream;
       } catch (err) {
@@ -56,36 +91,122 @@
       }
     }
 
+    // Load models
     async function loadModels() {
-      const modelUrl = 'https://justadudewhohacks.github.io/face-api.js/models';
-      await faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl);
-      await faceapi.nets.faceLandmark68TinyNet.loadFromUri(modelUrl);
+      const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
     }
 
-    async function trackNose() {
+    function mirrorX(x, videoWidth, containerWidth) {
+      return containerWidth - (x * containerWidth / videoWidth);
+    }
+
+    function isMouthOpen(landmarks) {
+      const mouth = landmarks.getMouth();
+      const topLip = mouth[13];
+      const bottomLip = mouth[19];
+      const openDist = bottomLip.y - topLip.y;
+      return openDist > 12; // Adjust threshold if needed
+    }
+
+    function getMouthRect(landmarks, videoWidth, containerWidth, containerHeight) {
+      const mouthPoints = landmarks.getMouth().map(pt => ({
+        x: mirrorX(pt.x, videoWidth, containerWidth),
+        y: pt.y * containerHeight / video.videoHeight
+      }));
+      const xs = mouthPoints.map(p => p.x);
+      const ys = mouthPoints.map(p => p.y);
+      return {
+        left: Math.min(...xs),
+        right: Math.max(...xs),
+        top: Math.min(...ys),
+        bottom: Math.max(...ys)
+      };
+    }
+
+    function isEmojiInMouth(mouthRect, emojiRect) {
+      const eCenterX = emojiRect.left + emojiRect.width / 2;
+      const eCenterY = emojiRect.top + emojiRect.height / 2;
+      const containerRect = container.getBoundingClientRect();
+      const relativeX = eCenterX - containerRect.left;
+      const relativeY = eCenterY - containerRect.top;
+
+      return (
+        relativeX >= mouthRect.left &&
+        relativeX <= mouthRect.right &&
+        relativeY >= mouthRect.top &&
+        relativeY <= mouthRect.bottom
+      );
+    }
+
+    function placeEmojiRandomly() {
+      const paddingX = container.clientWidth * 0.2;
+      const paddingY = container.clientHeight * 0.2;
+
+      const minX = paddingX;
+      const maxX = container.clientWidth - emoji.clientWidth - paddingX;
+
+      const minY = paddingY;
+      const maxY = container.clientHeight - emoji.clientHeight - paddingY;
+
+      const rawX = minX + Math.random() * (maxX - minX);
+      const rawY = minY + Math.random() * (maxY - minY);
+
+      const mirroredX = container.clientWidth - emoji.clientWidth - rawX;
+
+      emoji.style.left = `${mirroredX}px`;
+      emoji.style.top = `${rawY}px`;
+    }
+
+    async function detectLoop() {
       const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.5 });
-      const result = await faceapi
-        .detectSingleFace(video, options)
-        .withFaceLandmarks(true);
+      const result = await faceapi.detectSingleFace(video, options).withFaceLandmarks(true);
 
       if (result) {
-        const nose = result.landmarks.getNose()[3];
-        const rect = video.getBoundingClientRect();
+        const landmarks = result.landmarks;
+        if (isMouthOpen(landmarks)) {
+          const mouthRect = getMouthRect(
+            landmarks,
+            video.videoWidth,
+            container.clientWidth,
+            container.clientHeight
+          );
 
-        const mirroredX = rect.left + (video.videoWidth - nose.x) * (rect.width / video.videoWidth);
-        const adjustedY = rect.top + nose.y * (rect.height / video.videoHeight);
+          // Draw red box for mouth
+          mouthBox.style.left = `${mouthRect.left}px`;
+          mouthBox.style.top = `${mouthRect.top}px`;
+          mouthBox.style.width = `${mouthRect.right - mouthRect.left}px`;
+          mouthBox.style.height = `${mouthRect.bottom - mouthRect.top}px`;
+          mouthBox.style.display = 'block';
 
-        circle.style.left = `${mirroredX - 12}px`;
-        circle.style.top = `${adjustedY - 12}px`;
+          const emojiRect = emoji.getBoundingClientRect();
+
+          if (isEmojiInMouth(mouthRect, emojiRect)) {
+            currentEmojiIndex = (currentEmojiIndex + 1) % EMOJIS.length;
+            const newEmoji = EMOJIS[currentEmojiIndex];
+            emoji.textContent = newEmoji;
+            placeEmojiRandomly();
+
+            // Speak the word
+            const word = newEmoji === '🍌' ? 'chicken' : 'banana';
+            speak(word);
+          }
+        } else {
+          mouthBox.style.display = 'none';
+        }
+      } else {
+        mouthBox.style.display = 'none';
       }
 
-      setTimeout(trackNose, 300);
+      requestAnimationFrame(detectLoop);
     }
 
     async function init() {
       await loadModels();
       await video.play();
-      trackNose();
+      placeEmojiRandomly();
+      detectLoop();
     }
 
     video.onloadedmetadata = init;
