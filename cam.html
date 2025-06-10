@@ -11,13 +11,13 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: #000; /* optional: black background */
+		background: #000;
 	  }
 
 	  #video {
 		width: 240px;
 		height: 320px;
-		transform: scaleX(-1); /* mirror video */
+		transform: scaleX(-1);
 		object-fit: cover;
 		position: relative;
 		z-index: 1;
@@ -38,7 +38,6 @@
   <video id="video" autoplay muted playsinline></video>
   <div id="circle">🍌</div>
 
-  <!-- TensorFlow.js v1.7.4 for better CPU perf -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.7.4/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
@@ -73,15 +72,14 @@
         const nose = result.landmarks.getNose()[3];
         const rect = video.getBoundingClientRect();
 
-        // Mirror X coordinate because video is flipped horizontally
         const mirroredX = rect.left + (video.videoWidth - nose.x) * (rect.width / video.videoWidth);
         const adjustedY = rect.top + nose.y * (rect.height / video.videoHeight);
 
-        circle.style.left = `${mirroredX - 12}px`; // 12 = half emoji size
+        circle.style.left = `${mirroredX - 12}px`;
         circle.style.top = `${adjustedY - 12}px`;
       }
 
-      setTimeout(trackNose, 300); // slower detection to save CPU
+      setTimeout(trackNose, 300);
     }
 
     async function init() {
