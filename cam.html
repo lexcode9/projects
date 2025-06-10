@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Cam3</title>
+  <title>Cam6</title>
   <style>
     body {
       margin: 0;
@@ -9,13 +9,10 @@
     }
     #video {
       position: absolute;
-      top: 0;
-      left: 0;
       width: 640px;
       height: 480px;
-      background: black;
+      transform: scaleX(-1);
       object-fit: cover;
-      transform: scaleX(-1); /* Flip video horizontally */
     }
     #circle {
       position: absolute;
@@ -31,8 +28,10 @@
   <video id="video" autoplay muted playsinline></video>
   <div id="circle"></div>
 
-  <!-- Load TensorFlow and face-api.js -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
+  <!-- ✅ Use compatible TensorFlow.js v1.7.4 -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.7.4/dist/tf.min.js"></script>
+
+  <!-- ✅ Use face-api.js -->
   <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
   <script>
@@ -43,7 +42,6 @@
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         video.srcObject = stream;
-        await video.play();
       } catch (err) {
         alert('Camera error: ' + err);
       }
@@ -56,16 +54,15 @@
     }
 
     async function trackNose() {
-      const detection = await faceapi
+      const result = await faceapi
         .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
         .withFaceLandmarks(true);
 
-      if (detection) {
-        const nosePoint = detection.landmarks.getNose()[3];
-        const videoRect = video.getBoundingClientRect();
-
-        const mirroredX = videoRect.left + (video.videoWidth - nosePoint.x) * (videoRect.width / video.videoWidth);
-        const adjustedY = videoRect.top + nosePoint.y * (videoRect.height / video.videoHeight);
+      if (result) {
+        const nose = result.landmarks.getNose()[3];
+        const rect = video.getBoundingClientRect();
+        const mirroredX = rect.left + (video.videoWidth - nose.x) * (rect.width / video.videoWidth);
+        const adjustedY = rect.top + nose.y * (rect.height / video.videoHeight);
 
         circle.style.left = `${mirroredX - circle.offsetWidth / 2}px`;
         circle.style.top = `${adjustedY - circle.offsetHeight / 2}px`;
@@ -74,10 +71,13 @@
       requestAnimationFrame(trackNose);
     }
 
-    video.onloadedmetadata = async () => {
+    async function init() {
       await loadModels();
+      await video.play();
       trackNose();
-    };
+    }
+
+    video.onloadedmetadata = init;
 
     startCamera();
   </script>
