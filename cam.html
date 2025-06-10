@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Cam1</title>
+  <title>Cam2</title>
   <style>
     body {
       margin: 0;
@@ -48,14 +48,15 @@
     startCamera();
   </script>
 
-  <!-- TensorFlow.js and face-api.js -->
+  <!-- Load TensorFlow and face-api.js -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
   <script>
     async function loadModels() {
-      await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
-      await faceapi.nets.faceLandmark68TinyNet.loadFromUri('/models');
+      const modelUrl = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
+      await faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl);
+      await faceapi.nets.faceLandmark68TinyNet.loadFromUri(modelUrl);
     }
 
     async function trackNose() {
@@ -67,11 +68,9 @@
         const nosePoint = detection.landmarks.getNose()[3]; // Nose tip
         const videoRect = video.getBoundingClientRect();
 
-        // Compensate for the flipped video by mirroring X
         const mirroredX = videoRect.left + (video.videoWidth - nosePoint.x) * (videoRect.width / video.videoWidth);
         const adjustedY = videoRect.top + nosePoint.y * (videoRect.height / video.videoHeight);
 
-        // Position the circle
         circle.style.left = `${mirroredX - circle.offsetWidth / 2}px`;
         circle.style.top = `${adjustedY - circle.offsetHeight / 2}px`;
       }
