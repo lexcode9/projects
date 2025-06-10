@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Camera Flipped with Circle</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    #video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 640px;
+      height: 480px;
+      background: black;
+      object-fit: cover;
+      transform: scaleX(-1); /* Flip video */
+    }
+    #circle {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: red;
+      border-radius: 50%;
+      pointer-events: none;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+</head>
+<body>
+  <video id="video" autoplay muted playsinline></video>
+  <div id="circle"></div>
+
+  <script>
+    const video = document.getElementById('video');
+
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        await video.play();
+      } catch (err) {
+        alert('Camera error: ' + err);
+      }
+    }
+
+    startCamera();
+	</script>
+	<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+	<script>
+	  async function loadModels() {
+		await faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js/weights/');
+		await faceapi.nets.faceLandmark68TinyNet.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js/weights/');
+	  }
+
+	  async function trackNose() {
+		const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks(true);
+		if (detection) {
+		  const nosePoint = detection.landmarks.getNose()[3]; // tip of the nose
+		  console.log('Nose coords:', nosePoint);
+		}
+		requestAnimationFrame(trackNose);
+	  }
+
+	  video.onloadedmetadata = async () => {
+		await loadModels();
+		trackNose();
+	  };
+	</script>
+</body>
+</html>
