@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Cam2</title>
+  <title>Cam3</title>
   <style>
     body {
       margin: 0;
@@ -31,6 +31,10 @@
   <video id="video" autoplay muted playsinline></video>
   <div id="circle"></div>
 
+  <!-- Load TensorFlow and face-api.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
   <script>
     const video = document.getElementById('video');
     const circle = document.getElementById('circle');
@@ -45,16 +49,8 @@
       }
     }
 
-    startCamera();
-  </script>
-
-  <!-- Load TensorFlow and face-api.js -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-
-  <script>
     async function loadModels() {
-      const modelUrl = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
+      const modelUrl = 'https://justadudewhohacks.github.io/face-api.js/models';
       await faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl);
       await faceapi.nets.faceLandmark68TinyNet.loadFromUri(modelUrl);
     }
@@ -65,7 +61,7 @@
         .withFaceLandmarks(true);
 
       if (detection) {
-        const nosePoint = detection.landmarks.getNose()[3]; // Nose tip
+        const nosePoint = detection.landmarks.getNose()[3];
         const videoRect = video.getBoundingClientRect();
 
         const mirroredX = videoRect.left + (video.videoWidth - nosePoint.x) * (videoRect.width / video.videoWidth);
@@ -82,6 +78,8 @@
       await loadModels();
       trackNose();
     };
+
+    startCamera();
   </script>
 </body>
 </html>
