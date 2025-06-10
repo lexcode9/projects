@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Camera Flipped with Circle</title>
+  <title>Camera Flipped with Nose Tracking</title>
   <style>
     body {
       margin: 0;
@@ -15,7 +15,7 @@
       height: 480px;
       background: black;
       object-fit: cover;
-      transform: scaleX(-1); /* Flip video */
+      transform: scaleX(-1); /* Flip video horizontally */
     }
     #circle {
       position: absolute;
@@ -24,9 +24,6 @@
       background: red;
       border-radius: 50%;
       pointer-events: none;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
     }
   </style>
 </head>
@@ -36,6 +33,7 @@
 
   <script>
     const video = document.getElementById('video');
+    const circle = document.getElementById('circle');
 
     async function startCamera() {
       try {
@@ -48,28 +46,43 @@
     }
 
     startCamera();
-	</script>
-	<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
-	<script>
-	  async function loadModels() {
-		await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
-		await faceapi.nets.faceLandmark68TinyNet.loadFromUri('/models');
-	  }
+  </script>
 
-	  async function trackNose() {
-		const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks(true);
-		if (detection) {
-		  const nosePoint = detection.landmarks.getNose()[3]; // tip of the nose
-		  console.log('Nose coords:', nosePoint);
-		}
-		requestAnimationFrame(trackNose);
-	  }
+  <!-- TensorFlow.js and face-api.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
 
-	  video.onloadedmetadata = async () => {
-		await loadModels();
-		trackNose();
-	  };
-	</script>
+  <script>
+    async function loadModels() {
+      await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+      await faceapi.nets.faceLandmark68TinyNet.loadFromUri('/models');
+    }
+
+    async function trackNose() {
+      const detection = await faceapi
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks(true);
+
+      if (detection) {
+        const nosePoint = detection.landmarks.getNose()[3]; // Nose tip
+        const videoRect = video.getBoundingClientRect();
+
+        // Compensate for the flipped video by mirroring X
+        const mirroredX = videoRect.left + (video.videoWidth - nosePoint.x) * (videoRect.width / video.videoWidth);
+        const adjustedY = videoRect.top + nosePoint.y * (videoRect.height / video.videoHeight);
+
+        // Position the circle
+        circle.style.left = `${mirroredX - circle.offsetWidth / 2}px`;
+        circle.style.top = `${adjustedY - circle.offsetHeight / 2}px`;
+      }
+
+      requestAnimationFrame(trackNose);
+    }
+
+    video.onloadedmetadata = async () => {
+      await loadModels();
+      trackNose();
+    };
+  </script>
 </body>
 </html>
