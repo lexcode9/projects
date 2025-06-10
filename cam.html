@@ -53,8 +53,8 @@
 	<script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
 	<script>
 	  async function loadModels() {
-		await faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js/weights/');
-		await faceapi.nets.faceLandmark68TinyNet.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js/weights/');
+		await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+		await faceapi.nets.faceLandmark68TinyNet.loadFromUri('/models');
 	  }
 
 	  async function trackNose() {
