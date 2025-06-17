@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Cam ObjectDetector</title>
+  <title>Cam Object Detector</title>
   <style>
     body {
       margin: 0;
@@ -17,21 +17,22 @@
     }
     #container {
       position: relative;
-      width: 240px;
-      height: 320px;
+      width: min(50vw, 50vh);
+      height: calc(min(50vw, 50vh) * 4 / 3); /* Portrait ratio: 240x320 = 3:4 */
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
     }
     #video {
-      width: 240px;
-      height: 320px;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
       transform: scaleX(-1);
     }
     #status {
       margin-top: 10px;
+      text-align: center;
     }
     #switchCam {
       margin-top: 10px;
