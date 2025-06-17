@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cam ObjectDetector</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      color: white;
+      font-family: sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    #container {
+      position: relative;
+      width: 240px;
+      height: 320px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #video {
+      width: 240px;
+      height: 320px;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+    #status {
+      margin-top: 10px;
+    }
+    #switchCam {
+      margin-top: 10px;
+      padding: 5px 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="container">
+    <video id="video" autoplay muted playsinline></video>
+    <div id="status">scanning</div>
+    <button id="switchCam">Switch Camera</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+
+  <script>
+    const video = document.getElementById('video');
+    const statusDiv = document.getElementById('status');
+    const switchCamBtn = document.getElementById('switchCam');
+
+    let lastSpoken = '';
+    let speaking = false;
+    let useFrontCam = true;
+    let currentStream;
+
+    function speak(text) {
+      if (speaking || text === lastSpoken) return;
+      const msg = new SpeechSynthesisUtterance(text);
+      msg.lang = 'en-US';
+      msg.rate = 1;
+      msg.pitch = 0.9;
+      msg.onstart = () => speaking = true;
+      msg.onend = () => { speaking = false; lastSpoken = text; };
+      window.speechSynthesis.speak(msg);
+    }
+
+    async function startCamera() {
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+      }
+
+      const constraints = {
+        video: {
+          facingMode: useFrontCam ? 'user' : 'environment',
+          width: { ideal: 240 },
+          height: { ideal: 320 }
+        }
+      };
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        currentStream = stream;
+        video.srcObject = stream;
+
+        // Flip only for front cam
+        video.style.transform = useFrontCam ? 'scaleX(-1)' : 'none';
+
+      } catch (e) {
+        alert("Could not access camera: " + e);
+      }
+    }
+
+    async function runDetection() {
+      const model = await cocoSsd.load();
+      setInterval(async () => {
+        statusDiv.textContent = "scanning";
+        const predictions = await model.detect(video);
+        if (predictions.length > 0) {
+          const top = predictions[0];
+          statusDiv.textContent = top.class;
+          speak(top.class);
+        }
+      }, 2000);
+    }
+
+    switchCamBtn.addEventListener('click', async () => {
+      useFrontCam = !useFrontCam;
+      await startCamera();
+    });
+
+    startCamera().then(runDetection);
+  </script>
+</body>
+</html>
