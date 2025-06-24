@@ -428,66 +428,96 @@ function getAliveLetters(teamEl) {
   }).filter(Boolean);
 }
 
-function animateAttack(attackerEl, defenderEl, callback) {
-  const aRect = attackerEl.getBoundingClientRect();
-  const dRect = defenderEl.getBoundingClientRect();
-  const dx = dRect.left - aRect.left;
-  const dy = dRect.top - aRect.top;
-  const originalTransform = attackerEl.style.transform || "";
-  let duration = 200;
-  let start = null;
+	function animateAttack(attackerEl, defenderEl, callback) {
+	  const aRect = attackerEl.getBoundingClientRect();
+	  const dRect = defenderEl.getBoundingClientRect();
+	  const dx = dRect.left - aRect.left;
+	  const dy = dRect.top - aRect.top;
+	  const originalTransform = attackerEl.style.transform || "";
+	  let duration = 200;
+	  let start = null;
 
-  function moveForward(timestamp) {
-    if (!start) start = timestamp;
-    const progress = Math.min((timestamp - start) / duration, 1);
-    attackerEl.style.transform = `translate(${dx * progress}px, ${dy * progress}px)`;
-    if (progress < 1) {
-      requestAnimationFrame(moveForward);
-    } else {
-      const acc = parseInt(attackerEl.dataset.accuracy, 10) || 0;
-		const eva = parseInt(defenderEl.dataset.evasion, 10) || 0;
-		const hitChance = 50 + (acc - eva);
-		const hit = Math.random() * 100 < hitChance;
+	  function moveForward(timestamp) {
+		if (!start) start = timestamp;
+		const progress = Math.min((timestamp - start) / duration, 1);
+		attackerEl.style.transform = `translate(${dx * progress}px, ${dy * progress}px)`;
+		if (progress < 1) {
+		  requestAnimationFrame(moveForward);
+		} else {
+		  const acc = parseInt(attackerEl.dataset.accuracy, 10) || 0;
+			const eva = parseInt(defenderEl.dataset.evasion, 10) || 0;
+			const hitChance = 50 + (acc - eva);
+			const hit = Math.random() * 100 < hitChance;
 
-      if (hit) {
-        const damage = parseInt(attackerEl.dataset.damage, 10);
-        let defenderHP = parseInt(defenderEl.dataset.hp, 10) - damage;
-        defenderHP = Math.max(defenderHP, 0);
-        defenderEl.dataset.hp = defenderHP;
+		  if (hit) {
+			  const damage = parseInt(attackerEl.dataset.damage, 10);
+			  let defenderHP = parseInt(defenderEl.dataset.hp, 10) - damage;
+			  defenderHP = Math.max(defenderHP, 0);
+			  defenderEl.dataset.hp = defenderHP;
 
-        const hpFill = defenderEl.parentElement.querySelector(".hp-fill");
-        if (hpFill) {
-			const maxHp = parseInt(defenderEl.dataset.maxHp, 10);
-			hpFill.style.width = (defenderHP / maxHp) * 100 + '%';
+			  // Show damage text above defender
+			  showFloatingText(defenderEl.parentElement, damage);
 
-        }
+			  const hpFill = defenderEl.parentElement.querySelector(".hp-fill");
+			  if (hpFill) {
+				const maxHp = parseInt(defenderEl.dataset.maxHp, 10);
+				hpFill.style.width = (defenderHP / maxHp) * 100 + '%';
+			  }
 
-        if (defenderHP === 0) {
-          killLetter(defenderEl.parentElement);
-        }
+			  if (defenderHP === 0) {
+				killLetter(defenderEl.parentElement);
+			  }
 
-        shakeElement(defenderEl.parentElement, "hit");
-      }else {
-	  // Missed attack - no damage dealt
+			  shakeElement(defenderEl.parentElement, "hit");
+			} else {
+			  // Show "MISS" text above defender
+			  showFloatingText(defenderEl.parentElement, "MISS");
+			}
+
+		  setTimeout(() => {
+			start = null;
+			requestAnimationFrame(function moveBack(timestamp) {
+			  if (!start) start = timestamp;
+			  const backProgress = Math.min((timestamp - start) / duration, 1);
+			  attackerEl.style.transform = `translate(${dx * (1 - backProgress)}px, ${dy * (1 - backProgress)}px)`;
+			  if (backProgress < 1) {
+				requestAnimationFrame(moveBack);
+			  } else {
+				attackerEl.style.transform = originalTransform;
+				callback(hit);
+			  }
+			});
+		  }, 200);
+		}
+	  }
+	  requestAnimationFrame(moveForward);
 	}
 
-      setTimeout(() => {
-        start = null;
-        requestAnimationFrame(function moveBack(timestamp) {
-          if (!start) start = timestamp;
-          const backProgress = Math.min((timestamp - start) / duration, 1);
-          attackerEl.style.transform = `translate(${dx * (1 - backProgress)}px, ${dy * (1 - backProgress)}px)`;
-          if (backProgress < 1) {
-            requestAnimationFrame(moveBack);
-          } else {
-            attackerEl.style.transform = originalTransform;
-            callback(hit);
-          }
-        });
-      }, 200);
-    }
-  }
-  requestAnimationFrame(moveForward);
+function showFloatingText(container, text) {
+  const floatText = document.createElement("div");
+  floatText.textContent = text;
+  floatText.style.position = "absolute";
+  floatText.style.left = "50%";
+  floatText.style.top = "0";
+  floatText.style.transform = "translateX(-50%)";
+  floatText.style.color = text === "MISS" ? "gray" : "red";
+  floatText.style.fontWeight = "bold";
+  floatText.style.pointerEvents = "none";
+  floatText.style.userSelect = "none";
+  floatText.style.transition = "transform 1s ease-out, opacity 1s ease-out";
+  container.style.position = "relative"; // ensure container is positioned
+  container.appendChild(floatText);
+
+  // Animate floating up and fading out
+  requestAnimationFrame(() => {
+    floatText.style.transform = "translateX(-50%) translateY(-40px)";
+    floatText.style.opacity = "0";
+  });
+
+  // Remove element after animation
+  setTimeout(() => {
+    container.removeChild(floatText);
+  }, 1000);
 }
 
 function createTeamFromWord(teamEl, word) {
