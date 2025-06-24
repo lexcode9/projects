@@ -216,8 +216,7 @@
   <input type="text" id="word-input" placeholder="Type your word" disabled />
 
   <button id="fight-button" disabled>Fight</button>
-
-<div id="stats-display" class="panel-title" style="grid-column: 2 / 7; grid-row: 6; text-align: center; padding: 10px 0; font-size: 14px; white-space: pre-wrap;"></div>
+<div id="stats-display" style="grid-column: 2 / 7; grid-row: 6; font-size: 16px;"></div>
 
 <script>
   const aiTeam = document.getElementById("ai");
@@ -272,7 +271,7 @@
 
     const hpFill = document.createElement("div");
     hpFill.className = "hp-fill";
-    hpFill.style.width = "100%"; // full hp initially
+    hpFill.style.width = "100%";
 
     hpBar.appendChild(hpFill);
     container.appendChild(letterDiv);
@@ -282,33 +281,34 @@
   }
   
 	const letterStats = {
-	  A: { hp: 95, damage: 22 },
-	  B: { hp: 87, damage: 47 },
-	  C: { hp: 99, damage: 30 },
-	  D: { hp: 91, damage: 24 },
-	  E: { hp: 99, damage: 33 },
-	  F: { hp: 86, damage: 41 },
-	  G: { hp: 92, damage: 36 },
-	  H: { hp: 93, damage: 25 },
-	  I: { hp: 89, damage: 44 },
-	  J: { hp: 83, damage: 50 },
-	  K: { hp: 90, damage: 27 },
-	  L: { hp: 97, damage: 32 },
-	  M: { hp: 85, damage: 26 },
-	  N: { hp: 96, damage: 39 },
-	  O: { hp: 94, damage: 35 },
-	  P: { hp: 88, damage: 29 },
-	  Q: { hp: 80, damage: 48 },
-	  R: { hp: 99, damage: 31 },
-	  S: { hp: 98, damage: 28 },
-	  T: { hp: 84, damage: 45 },
-	  U: { hp: 99, damage: 34 },
-	  V: { hp: 87, damage: 40 },
-	  W: { hp: 82, damage: 42 },
-	  X: { hp: 90, damage: 38 },
-	  Y: { hp: 95, damage: 43 },
-	  Z: { hp: 88, damage: 37 }
+	  A: { hp: 125, damage: 80, accuracy: 30, evasion: 20 },
+	  B: { hp: 135, damage: 42, accuracy: 34, evasion: 19 },
+	  C: { hp: 110, damage: 37, accuracy: 22, evasion: 11 },
+	  D: { hp: 142, damage: 45, accuracy: 38, evasion: 26 },
+	  E: { hp: 156, damage: 50, accuracy: 38, evasion: 25 },
+	  F: { hp: 108, damage: 49, accuracy: 24, evasion: 10 },
+	  G: { hp: 130, damage: 30, accuracy: 28, evasion: 17 },
+	  H: { hp: 115, damage: 38, accuracy: 32, evasion: 21 },
+	  I: { hp: 125, damage: 40, accuracy: 30, evasion: 40 },
+	  J: { hp: 105, damage: 44, accuracy: 21, evasion: 13 },
+	  K: { hp: 138, damage: 36, accuracy: 30, evasion: 29 },
+	  L: { hp: 122, damage: 48, accuracy: 33, evasion: 24 },
+	  M: { hp: 109, damage: 34, accuracy: 40, evasion: 20 },
+	  N: { hp: 145, damage: 39, accuracy: 25, evasion: 18 },
+	  O: { hp: 250, damage: 40, accuracy: 30, evasion: 20 },
+	  P: { hp: 127, damage: 32, accuracy: 26, evasion: 27 },
+	  Q: { hp: 101, damage: 43, accuracy: 20, evasion: 23 },
+	  R: { hp: 133, damage: 31, accuracy: 23, evasion: 15 },
+	  S: { hp: 144, damage: 46, accuracy: 35, evasion: 28 },
+	  T: { hp: 111, damage: 40, accuracy: 39, evasion: 22 },
+	  U: { hp: 125, damage: 40, accuracy: 60, evasion: 20 },
+	  V: { hp: 117, damage: 38, accuracy: 34, evasion: 26 },
+	  W: { hp: 134, damage: 49, accuracy: 21, evasion: 30 },
+	  X: { hp: 119, damage: 30, accuracy: 27, evasion: 17 },
+	  Y: { hp: 141, damage: 33, accuracy: 25, evasion: 14 },
+	  Z: { hp: 106, damage: 45, accuracy: 38, evasion: 13 }
 	};
+
 
 	function getLetterStats(letter) {
 	  return letterStats[letter];
@@ -316,19 +316,46 @@
 
 	function renderLetterStats() {
 	  const container = document.getElementById("stats-display");
-	  const entries = Object.entries(letterStats);
-	  let output = "";
-	  
-	  for (let i = 0; i < entries.length; i++) {
-		const [letter, stats] = entries[i];
-		output += `${letter} = HP:${stats.hp}, DMG:${stats.damage}   `;
-		
-		if ((i + 1) % 5 === 0) {
-		  output += "\n";  // New line after every 5 items
-		}
+	  container.innerHTML = ""; // Clear previous content
+
+	  // Create table element
+	  const table = document.createElement("table");
+	  table.style.width = "100%";
+	  table.style.borderCollapse = "collapse";
+	  table.style.textAlign = "center";
+	  table.style.fontSize = "14px";
+
+	  // Helper to create a table cell (th or td)
+	  function createCell(tag, text) {
+		const cell = document.createElement(tag);
+		cell.textContent = text;
+		cell.style.border = "1px solid #ccc";
+		cell.style.padding = "4px";
+		return cell;
 	  }
-	  
-	  container.textContent = output.trim();
+
+	  // First row: header letters A-Z
+	  const headerRow = document.createElement("tr");
+	  headerRow.appendChild(createCell("th", "")); // Empty top-left corner
+	  for (const letter of Object.keys(letterStats)) {
+		headerRow.appendChild(createCell("th", letter));
+	  }
+	  table.appendChild(headerRow);
+
+	  // Rows for each stat: hp, damage, accuracy, evasion
+	  const stats = ["hp", "damage", "accuracy", "evasion"];
+	  const statNames = { hp: "HP", damage: "Damage", accuracy: "Accuracy", evasion: "Evasion" };
+
+	  for (const stat of stats) {
+		const row = document.createElement("tr");
+		row.appendChild(createCell("th", statNames[stat])); // row header
+		for (const letter of Object.keys(letterStats)) {
+		  row.appendChild(createCell("td", letterStats[letter][stat]));
+		}
+		table.appendChild(row);
+	  }
+
+	  container.appendChild(table);
 	}
 
 
@@ -391,7 +418,10 @@ function animateAttack(attackerEl, defenderEl, callback) {
     if (progress < 1) {
       requestAnimationFrame(moveForward);
     } else {
-      const hit = true;
+      const acc = parseInt(attackerEl.dataset.accuracy, 10) || 0;
+		const eva = parseInt(defenderEl.dataset.evasion, 10) || 0;
+		const hitChance = 50 + (acc - eva);
+		const hit = Math.random() * 100 < hitChance;
 
       if (hit) {
         const damage = parseInt(attackerEl.dataset.damage, 10);
@@ -411,7 +441,9 @@ function animateAttack(attackerEl, defenderEl, callback) {
         }
 
         shakeElement(defenderEl.parentElement, "hit");
-      }
+      }else {
+	  // Missed attack - no damage dealt
+	}
 
       setTimeout(() => {
         start = null;
