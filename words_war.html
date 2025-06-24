@@ -16,14 +16,11 @@
 
   body {
     display: grid;
-    /* 7 columns: gutters and panels horizontally */
     grid-template-columns: 2.5% 20% 2.5% 50% 2.5% 20% 2.5%;
-    /* 6 rows: title, main panels, result text, input, button, and a spacer */
     grid-template-rows: auto 50vh auto auto auto 1fr;
     height: 100vh;
   }
 
-  /* Title spans all columns */
   h2 {
     grid-column: 1 / 8;
     margin: 0;
@@ -31,7 +28,6 @@
     text-align: center;
   }
 
-  /* Left panel */
   #left-panel {
     grid-column: 2 / 3;
     grid-row: 2;
@@ -42,7 +38,6 @@
     height: 100%;
   }
 
-  /* Stage panel */
   #stage {
     grid-column: 4 / 5;
     grid-row: 2;
@@ -55,7 +50,6 @@
     justify-content: space-between;
   }
 
-  /* Right panel */
   #right-panel {
     grid-column: 6 / 7;
     grid-row: 2;
@@ -66,7 +60,6 @@
     height: 100%;
   }
 
-  /* Panel inside stage */
   #panel {
     width: 100%;
     flex-grow: 1;
@@ -75,14 +68,19 @@
     justify-content: space-between;
   }
 
-  /* Teams */
   .team {
     display: flex;
     justify-content: center;
     gap: 20px;
   }
 
-  /* Letters */
+  .letter-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+
   .letter {
     width: 60px;
     height: 60px;
@@ -97,6 +95,27 @@
     opacity: 0.1;
   }
 
+  .hp-bar {
+    width: 60px;
+    height: 8px;
+    border: 1px solid black;
+    background-color: #ddd;
+    margin-top: 4px;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .hp-fill {
+    height: 100%;
+    background-color: #4caf50;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: width 0.3s ease;
+  }
+
   .attacker-clone {
     position: absolute;
     z-index: 100;
@@ -108,7 +127,6 @@
     pointer-events: none;
   }
 
-  /* Result text */
   #result {
     grid-column: 2 / 7;
     grid-row: 3;
@@ -118,7 +136,6 @@
     margin: 10px 0;
   }
 
-  /* Input */
   #word-input {
     grid-column: 2 / 7;
     grid-row: 4;
@@ -132,7 +149,6 @@
     text-align: center;
   }
 
-  /* Button */
   #fight-button {
     grid-column: 2 / 7;
     grid-row: 5;
@@ -201,6 +217,8 @@
 
   <button id="fight-button" disabled>Fight</button>
 
+<div id="stats-display" class="panel-title" style="grid-column: 2 / 7; grid-row: 6; text-align: center; padding: 10px 0; font-size: 14px; white-space: pre-wrap;"></div>
+
 <script>
   const aiTeam = document.getElementById("ai");
   const playerTeam = document.getElementById("player");
@@ -241,22 +259,89 @@
     ).join('');
   }
 
-  function createTeamFromWord(teamEl, word) {
-    teamEl.innerHTML = "";
-    for (const ch of word) {
-      const letter = document.createElement("div");
-      letter.className = "letter";
-      letter.textContent = ch;
-      teamEl.appendChild(letter);
-    }
+  function createLetterWithHP(letter) {
+    const container = document.createElement("div");
+    container.className = "letter-container";
+
+    const letterDiv = document.createElement("div");
+    letterDiv.className = "letter";
+    letterDiv.textContent = letter;
+
+    const hpBar = document.createElement("div");
+    hpBar.className = "hp-bar";
+
+    const hpFill = document.createElement("div");
+    hpFill.className = "hp-fill";
+    hpFill.style.width = "100%"; // full hp initially
+
+    hpBar.appendChild(hpFill);
+    container.appendChild(letterDiv);
+    container.appendChild(hpBar);
+
+    return container;
   }
+  
+	const letterStats = {
+	  A: { hp: 95, damage: 22 },
+	  B: { hp: 87, damage: 47 },
+	  C: { hp: 99, damage: 30 },
+	  D: { hp: 91, damage: 24 },
+	  E: { hp: 99, damage: 33 },
+	  F: { hp: 86, damage: 41 },
+	  G: { hp: 92, damage: 36 },
+	  H: { hp: 93, damage: 25 },
+	  I: { hp: 89, damage: 44 },
+	  J: { hp: 83, damage: 50 },
+	  K: { hp: 90, damage: 27 },
+	  L: { hp: 97, damage: 32 },
+	  M: { hp: 85, damage: 26 },
+	  N: { hp: 96, damage: 39 },
+	  O: { hp: 94, damage: 35 },
+	  P: { hp: 88, damage: 29 },
+	  Q: { hp: 80, damage: 48 },
+	  R: { hp: 99, damage: 31 },
+	  S: { hp: 98, damage: 28 },
+	  T: { hp: 84, damage: 45 },
+	  U: { hp: 99, damage: 34 },
+	  V: { hp: 87, damage: 40 },
+	  W: { hp: 82, damage: 42 },
+	  X: { hp: 90, damage: 38 },
+	  Y: { hp: 95, damage: 43 },
+	  Z: { hp: 88, damage: 37 }
+	};
+
+	function getLetterStats(letter) {
+	  return letterStats[letter];
+	}
+
+	function renderLetterStats() {
+	  const container = document.getElementById("stats-display");
+	  const entries = Object.entries(letterStats);
+	  let output = "";
+	  
+	  for (let i = 0; i < entries.length; i++) {
+		const [letter, stats] = entries[i];
+		output += `${letter} = HP:${stats.hp}, DMG:${stats.damage}   `;
+		
+		if ((i + 1) % 5 === 0) {
+		  output += "\n";  // New line after every 5 items
+		}
+	  }
+	  
+	  container.textContent = output.trim();
+	}
+
+
+	renderLetterStats();
+
+  
 
   function sanitizeInput(str) {
     return str.toUpperCase().replace(/[^A-Z]/g, "");
   }
 
   function getAliveLetters(teamEl) {
-    return Array.from(teamEl.children).filter(l => !l.classList.contains("dead"));
+    return Array.from(teamEl.children).filter(l => !l.querySelector(".letter").classList.contains("dead"));
   }
 
   function addWordToHistory(listEl, word) {
@@ -265,8 +350,11 @@
     listEl.appendChild(li);
   }
 
-  function killLetter(letterEl) {
+  function killLetter(letterContainer) {
+    const letterEl = letterContainer.querySelector(".letter");
     letterEl.classList.add("dead");
+    const hpFill = letterContainer.querySelector(".hp-fill");
+    hpFill.style.width = "0%";
   }
 
   function shakeElement(el, type) {
@@ -278,47 +366,103 @@
     }, type === "miss" ? 100 : 200);
   }
 
-  function animateAttack(attackerEl, defenderEl, callback) {
-    const aRect = attackerEl.getBoundingClientRect();
-    const dRect = defenderEl.getBoundingClientRect();
-    const dx = dRect.left - aRect.left;
-    const dy = dRect.top - aRect.top;
-    const originalTransform = attackerEl.style.transform || "";
-    let duration = 150;
-    let start = null;
+  
 
-    function moveForward(timestamp) {
-      if (!start) start = timestamp;
-      const progress = Math.min((timestamp - start) / duration, 1);
-      attackerEl.style.transform = `translate(${dx * progress}px, ${dy * progress}px)`;
-      if (progress < 1) {
-        requestAnimationFrame(moveForward);
-      } else {
-        const hit = Math.random() < 0.5;
-        if (hit) {
-          shakeElement(defenderEl, "hit");
-          killLetter(defenderEl);
-        } else {
-          shakeElement(defenderEl, "miss");
+function getAliveLetters(teamEl) {
+  return Array.from(teamEl.querySelectorAll(".letter-container")).map(container => {
+    const letter = container.querySelector(".letter");
+    return letter.classList.contains("dead") ? null : letter;
+  }).filter(Boolean);
+}
+
+function animateAttack(attackerEl, defenderEl, callback) {
+  const aRect = attackerEl.getBoundingClientRect();
+  const dRect = defenderEl.getBoundingClientRect();
+  const dx = dRect.left - aRect.left;
+  const dy = dRect.top - aRect.top;
+  const originalTransform = attackerEl.style.transform || "";
+  let duration = 200;
+  let start = null;
+
+  function moveForward(timestamp) {
+    if (!start) start = timestamp;
+    const progress = Math.min((timestamp - start) / duration, 1);
+    attackerEl.style.transform = `translate(${dx * progress}px, ${dy * progress}px)`;
+    if (progress < 1) {
+      requestAnimationFrame(moveForward);
+    } else {
+      const hit = true;
+
+      if (hit) {
+        const damage = parseInt(attackerEl.dataset.damage, 10);
+        let defenderHP = parseInt(defenderEl.dataset.hp, 10) - damage;
+        defenderHP = Math.max(defenderHP, 0);
+        defenderEl.dataset.hp = defenderHP;
+
+        const hpFill = defenderEl.parentElement.querySelector(".hp-fill");
+        if (hpFill) {
+			const maxHp = parseInt(defenderEl.dataset.maxHp, 10);
+			hpFill.style.width = (defenderHP / maxHp) * 100 + '%';
+
         }
-        setTimeout(() => {
-          start = null;
-          requestAnimationFrame(function moveBack(timestamp) {
-            if (!start) start = timestamp;
-            const backProgress = Math.min((timestamp - start) / duration, 1);
-            attackerEl.style.transform = `translate(${dx * (1 - backProgress)}px, ${dy * (1 - backProgress)}px)`;
-            if (backProgress < 1) {
-              requestAnimationFrame(moveBack);
-            } else {
-              attackerEl.style.transform = originalTransform;
-              callback(hit);
-            }
-          });
-        }, 200);
+
+        if (defenderHP === 0) {
+          killLetter(defenderEl.parentElement);
+        }
+
+        shakeElement(defenderEl.parentElement, "hit");
       }
+
+      setTimeout(() => {
+        start = null;
+        requestAnimationFrame(function moveBack(timestamp) {
+          if (!start) start = timestamp;
+          const backProgress = Math.min((timestamp - start) / duration, 1);
+          attackerEl.style.transform = `translate(${dx * (1 - backProgress)}px, ${dy * (1 - backProgress)}px)`;
+          if (backProgress < 1) {
+            requestAnimationFrame(moveBack);
+          } else {
+            attackerEl.style.transform = originalTransform;
+            callback(hit);
+          }
+        });
+      }, 200);
     }
-    requestAnimationFrame(moveForward);
   }
+  requestAnimationFrame(moveForward);
+}
+
+function createTeamFromWord(teamEl, word) {
+  teamEl.innerHTML = "";
+  for (const ch of word) {
+    const container = document.createElement("div");
+    container.className = "letter-container";
+
+    const letter = document.createElement("div");
+    letter.className = "letter";
+    letter.textContent = ch;
+
+    const stats = getLetterStats(ch);
+    letter.dataset.hp = stats.hp;
+    letter.dataset.maxHp = stats.hp;
+    letter.dataset.damage = stats.damage;
+
+    const hpBar = document.createElement("div");
+    hpBar.className = "hp-bar";
+
+    const hpFill = document.createElement("div");
+    hpFill.className = "hp-fill";
+    hpFill.style.width = "100%";
+
+    hpBar.appendChild(hpFill);
+    container.appendChild(letter);
+    container.appendChild(hpBar);
+    teamEl.appendChild(container);
+  }
+}
+
+
+
 
   function fightLoop(attackerTeam, defenderTeam, onDone) {
     const attackers = getAliveLetters(attackerTeam);
@@ -373,22 +517,8 @@
         fightBtn.disabled = true;
         return;
       }
-      resultEl.textContent = "Checking word...";
-      fightBtn.disabled = true;
-      try {
-        const res = await fetch(`https://api.datamuse.com/words?sp=${input.value.toLowerCase()}&max=1`);
-        const data = await res.json();
-        if (data.length > 0 && data[0].word.toUpperCase() === input.value) {
-          resultEl.textContent = `Enter a word that matches the length ${currentLength}/${maxLength}`;
-          fightBtn.disabled = false;
-        } else {
-          resultEl.textContent = `Invalid word, try again ${currentLength}/${maxLength}`;
-          fightBtn.disabled = true;
-        }
-      } catch {
-        resultEl.textContent = `Error validating word`;
-        fightBtn.disabled = true;
-      }
+      resultEl.textContent = `Ready to fight! (${currentLength}/${maxLength})`;
+      fightBtn.disabled = false;
     } else {
       resultEl.textContent = `Enter a word that matches the length ${currentLength}/${maxLength}`;
       fightBtn.disabled = true;
@@ -396,43 +526,43 @@
   });
 
   fightBtn.addEventListener("click", () => {
-    currentPlayerWord = input.value;
-    usedWords.add(currentPlayerWord);
-    addWordToHistory(playerHistoryEl, currentPlayerWord);
-    resetStage(currentAIWord, currentPlayerWord);
-    resultEl.textContent = "Fight started!";
-    input.disabled = true;
-    fightBtn.disabled = true;
-    const aiStarts = Math.random() < 0.5;
-    const onEnd = () => {
-      const playerAlive = getAliveLetters(playerTeam).length;
-      const aiAlive = getAliveLetters(aiTeam).length;
-      if (playerAlive === 0 && aiAlive > 0) {
-        resultEl.textContent = "AI wins!";
-        setTimeout(() => {
-          createTeamFromWord(playerTeam, "");
-          resetStage(currentAIWord, "");
-          resultEl.textContent = "Enter a word that matches the length";
-          input.disabled = false;
-          input.value = "";
-          input.setAttribute("maxlength", currentAIWord.length);
-        }, 1000);
-      } else if (aiAlive === 0 && playerAlive > 0) {
-        resultEl.textContent = "Player wins!";
-        setTimeout(() => {
-          startNewRound();
-        }, 1000);
-      } else {
-        resultEl.textContent = "Draw!";
-      }
-    };
-    if (aiStarts) {
-      fightLoop(aiTeam, playerTeam, onEnd);
+  currentPlayerWord = input.value;
+  usedWords.add(currentPlayerWord);
+  addWordToHistory(playerHistoryEl, currentPlayerWord);
+  resetStage(currentAIWord, currentPlayerWord);
+  input.disabled = true;
+  fightBtn.disabled = true;
+  resultEl.textContent = "Fight started!";
+
+  const firstAttacker = Math.random() < 0.5 ? playerTeam : aiTeam;
+  const firstDefender = firstAttacker === playerTeam ? aiTeam : playerTeam;
+
+  fightLoop(firstAttacker, firstDefender, () => {
+    const playerAlive = getAliveLetters(playerTeam).length;
+    const aiAlive = getAliveLetters(aiTeam).length;
+    if (playerAlive === 0 && aiAlive > 0) {
+      resultEl.textContent = "AI wins!";
+      setTimeout(() => {
+        createTeamFromWord(playerTeam, "");
+        resetStage(currentAIWord, "");
+        resultEl.textContent = "Enter a word that matches the length";
+        input.disabled = false;
+        input.value = "";
+        input.setAttribute("maxlength", currentAIWord.length);
+      }, 1000);
+    } else if (aiAlive === 0 && playerAlive > 0) {
+      resultEl.textContent = "Player wins!";
+      setTimeout(() => {
+        startNewRound();
+      }, 1000);
     } else {
-      fightLoop(playerTeam, aiTeam, onEnd);
+      resultEl.textContent = "Draw!";
+      setTimeout(() => {
+        startNewRound();
+      }, 1000);
     }
   });
+});
 </script>
-
 </body>
 </html>
