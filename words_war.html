@@ -12,24 +12,18 @@ height: 100%;
 font-family: monospace;
 box-sizing: border-box;
 background: white;
+overflow-y: auto; /* enable vertical scrolling */
 }
 
 body {
 display: grid;
-grid-template-columns: 2.5% 20% 2.5% 50% 2.5% 20% 2.5%;
-grid-template-rows:
-auto       
-auto      
-1fr        
-auto      
-auto       
-auto       
-auto;      
+grid-template-columns: 2.5% 25% 2.5% 65% 2.5%;
+grid-template-rows: auto auto 1fr auto auto auto auto;
 height: 100vh;
 }
 
 h2 {
-grid-column: 1 / 8;
+grid-column: 1 / 6;
 grid-row: 1;
 margin: 0;
 padding: 10px 0;
@@ -37,11 +31,10 @@ text-align: center;
 }
 
 #speed-control {
-grid-column: 2 / 7;
+grid-column: 2 / 5;
 grid-row: 2;
 padding: 10px;
 text-align: center;
-font-family: monospace;
 background: white;
 z-index: 1;
 }
@@ -53,7 +46,9 @@ border: 1px solid #000;
 padding: 10px;
 box-sizing: border-box;
 overflow-y: auto;
-height: 100%;
+min-height: 300px;
+max-height: 600px;
+width: auto;
 }
 
 #stage {
@@ -62,20 +57,12 @@ grid-row: 3;
 border: 1px solid #000;
 padding: 10px;
 box-sizing: border-box;
-height: 100%;
 display: flex;
 flex-direction: column;
 justify-content: space-between;
-}
-
-#right-panel {
-grid-column: 6 / 7;
-grid-row: 3;
-border: 1px solid #000;
-padding: 10px;
-box-sizing: border-box;
-overflow-y: auto;
-height: 100%;
+min-height: 300px;
+max-height: 600px;
+width: auto;
 }
 
 #panel {
@@ -135,19 +122,8 @@ left: 0;
 transition: width 0.3s ease;
 }
 
-.attacker-clone {
-position: absolute;
-z-index: 100;
-width: 12vmin;
-height: 12vmin;
-font-size: 8vmin;
-line-height: 12vmin;
-text-align: center;
-pointer-events: none;
-}
-
 #result {
-grid-column: 2 / 7;
+grid-column: 2 / 5;
 grid-row: 4;
 height: 24px;
 font-weight: bold;
@@ -156,7 +132,7 @@ margin: 10px 0;
 }
 
 #word-input {
-grid-column: 2 / 7;
+grid-column: 2 / 5;
 grid-row: 5;
 font-family: monospace;
 font-size: 16px;
@@ -169,7 +145,7 @@ text-align: center;
 }
 
 #fight-button {
-grid-column: 2 / 7;
+grid-column: 2 / 5;
 grid-row: 6;
 padding: 8px 16px;
 font-family: monospace;
@@ -185,9 +161,19 @@ opacity: 0.5;
 }
 
 #stats-display {
-grid-column: 2 / 7;
+grid-column: 2 / 5;
 grid-row: 7;
-font-size: 16px;
+margin: 0 auto;
+width: max-content;
+}
+
+#stats-display th,
+#stats-display td {
+text-align: center;
+}
+
+.shake {
+animation: shake 0.2s;
 }
 
 @keyframes shake {
@@ -196,10 +182,6 @@ font-size: 16px;
 50% { transform: translateX(4px); }
 75% { transform: translateX(-4px); }
 100% { transform: translateX(0); }
-}
-
-.shake {
-animation: shake 0.2s;
 }
 
 .panel-title {
@@ -213,7 +195,6 @@ margin: 0;
 max-height: 80vh;
 overflow-y: auto;
 }
-
 
 @media (min-width: 1000px) {
 .letter {
@@ -238,16 +219,15 @@ line-height: 60px;
 }
 }
 
+
 </style>
 </head>
 <body>
 
 <h2>Words War</h2>
 
-
-
 <div id="left-panel">
-<div class="panel-title">Your Words</div>
+<div class="panel-title">Word History</div>
 <ul id="word-history"></ul>
 </div>
 
@@ -263,18 +243,11 @@ Game Speed: <span id="speedLabel">Normal</span>
 </div>
 </div>
 
-<div id="right-panel">
-<div class="panel-title">Enemy</div>
-<ul id="enemy-info"></ul>
-</div>
-
 <div id="result">Enter a word that matches the length</div>
 
 <input type="text" id="word-input" placeholder="Type your word" disabled />
-
 <button id="fight-button" disabled>Fight</button>
-<div id="stats-display" style="grid-column: 2 / 7; grid-row: 7; font-size: 16px;"></div>
-
+<div id="stats-display"></div>
 <script>
 
 let duration = 200;
@@ -399,7 +372,8 @@ const container = document.getElementById("stats-display");
 container.innerHTML = "";
 
 const table = document.createElement("table");
-table.style.width = "100%";
+table.style.width = "auto";       
+table.style.maxWidth = "100%";     
 table.style.borderCollapse = "collapse";
 table.style.textAlign = "center";
 table.style.fontSize = "14px";
@@ -413,26 +387,26 @@ return cell;
 }
 
 const headerRow = document.createElement("tr");
-headerRow.appendChild(createCell("th", ""));
-for (const letter of Object.keys(letterStats)) {
-headerRow.appendChild(createCell("th", letter));
-}
+headerRow.appendChild(createCell("th", "Letter"));
+headerRow.appendChild(createCell("th", "HP"));
+headerRow.appendChild(createCell("th", "Damage"));
+headerRow.appendChild(createCell("th", "Accuracy"));
+headerRow.appendChild(createCell("th", "Evasion"));
 table.appendChild(headerRow);
 
-const stats = ["hp", "damage", "accuracy", "evasion"];
-const statNames = { hp: "HP", damage: "Damage", accuracy: "Accuracy", evasion: "Evasion" };
-
-for (const stat of stats) {
-const row = document.createElement("tr");
-row.appendChild(createCell("th", statNames[stat]));
 for (const letter of Object.keys(letterStats)) {
-row.appendChild(createCell("td", letterStats[letter][stat]));
-}
+const row = document.createElement("tr");
+row.appendChild(createCell("td", letter));
+row.appendChild(createCell("td", letterStats[letter].hp));
+row.appendChild(createCell("td", letterStats[letter].damage));
+row.appendChild(createCell("td", letterStats[letter].accuracy));
+row.appendChild(createCell("td", letterStats[letter].evasion));
 table.appendChild(row);
 }
 
 container.appendChild(table);
 }
+
 
 
 renderLetterStats();
@@ -447,11 +421,13 @@ function getAliveLetters(teamEl) {
 return Array.from(teamEl.children).filter(l => !l.querySelector(".letter").classList.contains("dead"));
 }
 
-function addWordToHistory(listEl, word) {
+function addWordToHistory(source, word) {
+const listEl = document.getElementById("word-history");
 const li = document.createElement("li");
-li.textContent = word;
+li.innerHTML = `<strong>${source}:</strong> ${word}`;
 listEl.appendChild(li);
 }
+
 
 function killLetter(letterContainer) {
 const letterEl = letterContainer.querySelector(".letter");
@@ -627,8 +603,8 @@ resultEl.textContent = "Loading AI word...";
 input.disabled = true;
 fightBtn.disabled = true;
 currentAIWord = await fetchValidWord(3, 5);
-usedWords.add(currentAIWord);
-addWordToHistory(aiHistoryEl, currentAIWord);
+usedWords.add(currentPlayerWord);
+addWordToHistory("AI", currentAIWord);
 resetStage(currentAIWord, "");
 input.disabled = false;
 input.value = "";
@@ -661,7 +637,7 @@ fightBtn.disabled = true;
 fightBtn.addEventListener("click", () => {
 currentPlayerWord = input.value;
 usedWords.add(currentPlayerWord);
-addWordToHistory(playerHistoryEl, currentPlayerWord);
+addWordToHistory("Player", currentPlayerWord);
 resetStage(currentAIWord, currentPlayerWord);
 input.disabled = true;
 fightBtn.disabled = true;
