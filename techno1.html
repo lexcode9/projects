@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Emoji Voting</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .boxes {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    .box {
+      width: 200px;
+      height: 200px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 100px;
+    }
+
+    .red { background-color: red; }
+    .green { background-color: green; }
+    .blue { background-color: blue; }
+
+    .stats {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="boxes">
+    <div class="box red" onclick="vote('red')">🐲</div>
+    <div class="box green" onclick="vote('green')">🐸</div>
+    <div class="box blue" onclick="vote('blue')">🐢</div>
+  </div>
+
+  <div class="stats">
+    <div><b>Total Votes: <span id="total">0</span></b></div>
+    <div>Red: <span id="red-pct">0%</span></div>
+    <div>Green: <span id="green-pct">0%</span></div>
+    <div>Blue: <span id="blue-pct">0%</span></div>
+  </div>
+
+  <script>
+    const counts = { red: 0, green: 0, blue: 0 };
+
+    function vote(color) {
+      counts[color]++;
+      updateStats();
+    }
+
+    function updateStats() {
+      const total = counts.red + counts.green + counts.blue;
+      document.getElementById('total').textContent = total;
+
+      function percent(count) {
+        return total === 0 ? '0%' : Math.round((count / total) * 100) + '%';
+      }
+
+      document.getElementById('red-pct').textContent = percent(counts.red);
+      document.getElementById('green-pct').textContent = percent(counts.green);
+      document.getElementById('blue-pct').textContent = percent(counts.blue);
+    }
+  </script>
+
+</body>
+</html>

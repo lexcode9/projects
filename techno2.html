@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Burger/Chicken Combo Voting</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      font-family: sans-serif;
+    }
+
+    .boxes {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    .box {
+      width: 200px;
+      height: 200px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 100px;
+      user-select: none;
+    }
+	
+	.b1 { background-color: red; }
+    .b2 { background-color: yellow; }
+	
+    .stats {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 200px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="step1" class="boxes">
+    <div class="box b1" data-choice="burger" onclick="chooseMain('burger')">🍔</div>
+    <div class="box b1" data-choice="chicken" onclick="chooseMain('chicken')">🍗</div>
+  </div>
+
+  <div id="step2" class="boxes" style="display:none;">
+    <div class="box b2" data-choice="fries" onclick="chooseSide('fries')">🍟</div>
+    <div class="box b2" data-choice="icecream" onclick="chooseSide('icecream')">🍦</div>
+  </div>
+
+  <div class="stats">
+    <div><b>Total Votes: <span id="total">0</span></b></div>
+    <div>Burger + Fries: <span id="burger-fries">0%</span></div>
+    <div>Burger + Ice Cream: <span id="burger-icecream">0%</span></div>
+    <div>Chicken + Fries: <span id="chicken-fries">0%</span></div>
+    <div>Chicken + Ice Cream: <span id="chicken-icecream">0%</span></div>
+  </div>
+
+  <script>
+    const counts = {
+      'burger-fries': 0,
+      'burger-icecream': 0,
+      'chicken-fries': 0,
+      'chicken-icecream': 0
+    };
+    let mainChoice = null;
+
+    function chooseMain(choice) {
+      mainChoice = choice;
+      document.getElementById('step1').style.display = 'none';
+      document.getElementById('step2').style.display = 'flex';
+    }
+
+    function chooseSide(side) {
+      const key = mainChoice + '-' + side;
+      counts[key]++;
+      updateStats();
+      // Reset to step1 for another vote
+      mainChoice = null;
+      document.getElementById('step1').style.display = 'flex';
+      document.getElementById('step2').style.display = 'none';
+    }
+
+    function updateStats() {
+      const total = Object.values(counts).reduce((a,b) => a+b, 0);
+      document.getElementById('total').textContent = total;
+
+      function pct(val) {
+        return total === 0 ? '0%' : Math.round((val / total) * 100) + '%';
+      }
+
+      document.getElementById('burger-fries').textContent = pct(counts['burger-fries']);
+      document.getElementById('burger-icecream').textContent = pct(counts['burger-icecream']);
+      document.getElementById('chicken-fries').textContent = pct(counts['chicken-fries']);
+      document.getElementById('chicken-icecream').textContent = pct(counts['chicken-icecream']);
+    }
+  </script>
+
+</body>
+</html>
