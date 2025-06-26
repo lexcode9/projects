@@ -2,174 +2,38 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>Words War</title>
 <style>
-html, body {
-margin: 0;
-padding: 0;
-height: 100%;
-font-family: monospace;
-box-sizing: border-box;
-background: white;
-overflow-y: auto;
-}
-
 body {
-display: grid;
-grid-template-columns: 2.5% 25% 2.5% 65% 2.5%;
-grid-template-rows: auto auto 1fr auto auto auto auto;
-height: 100vh;
-}
-
-h2 {
-grid-column: 1 / 6;
-grid-row: 1;
-margin: 0;
-padding: 10px 0;
-text-align: center;
-}
-
-#speed-control {
-grid-column: 2 / 5;
-grid-row: 2;
-padding: 10px;
-text-align: center;
-background: white;
-z-index: 1;
-}
-
-#left-panel {
-grid-column: 2 / 3;
-grid-row: 3;
-border: 1px solid #000;
-padding: 10px;
-box-sizing: border-box;
-overflow-y: auto;
-min-height: 300px;
-max-height: 600px;
-width: auto;
-}
-
-#stage {
-grid-column: 4 / 5;
-grid-row: 3;
-border: 1px solid #000;
-padding: 10px;
-box-sizing: border-box;
-display: flex;
-flex-direction: column;
-justify-content: space-between;
-min-height: 300px;
-max-height: 600px;
-width: auto;
-}
-
-#panel {
-width: 100%;
-flex-grow: 1;
-display: flex;
-flex-direction: column;
-justify-content: space-between;
-}
-
-.team {
-display: flex;
-justify-content: center;
-gap: 20px;
-flex-wrap: wrap;
+font-size: 14px;
 }
 
 .letter-container {
-display: flex;
-flex-direction: column;
-align-items: center;
-position: relative;
+text-align: center;
+margin: 2px;
 }
 
 .letter {
-width: 12vmin;
-height: 12vmin;
-font-size: 8vmin;
-line-height: 12vmin;
-text-align: center;
-user-select: none;
-transition: opacity 0.3s;
-}
-
-.dead {
-opacity: 0.1;
+font-weight: bold;
+font-size: 18px;
 }
 
 .hp-bar {
-width: 12vmin;
-height: 1.2vmin;
-border: 0.1vmin solid black;
-background-color: #ddd;
-margin-top: 0.5vmin;
-position: relative;
-overflow: hidden;
-box-sizing: border-box;
+width: 40px;
+height: 5px;
+background: #ccc;
 }
 
 .hp-fill {
 height: 100%;
-background-color: #4caf50;
+background: green;
 width: 100%;
-position: absolute;
-top: 0;
-left: 0;
-transition: width 0.3s ease;
 }
 
-#result {
-grid-column: 2 / 5;
-grid-row: 4;
-height: 24px;
-font-weight: bold;
-text-align: center;
-margin: 10px 0;
-}
-
-#word-input {
-grid-column: 2 / 5;
-grid-row: 5;
-font-family: monospace;
-font-size: 16px;
-padding: 4px;
-width: 200px;
-margin: 0 auto;
-display: block;
-text-transform: uppercase;
-text-align: center;
-}
-
-#fight-button {
-grid-column: 2 / 5;
-grid-row: 6;
-padding: 8px 16px;
-font-family: monospace;
-font-size: 16px;
-cursor: pointer;
-margin: 10px auto 0;
-display: block;
-}
-
-#fight-button:disabled {
-cursor: not-allowed;
-opacity: 0.5;
-}
-
-#stats-display {
-grid-column: 2 / 5;
-grid-row: 7;
-margin: 0 auto;
-width: max-content;
-}
-
-#stats-display th,
-#stats-display td {
-text-align: center;
+.dead .letter {
+color: gray;
+text-decoration: line-through;
+opacity: 0.1;
 }
 
 .shake {
@@ -178,159 +42,97 @@ animation: shake 0.2s;
 
 @keyframes shake {
 0% { transform: translateX(0); }
-25% { transform: translateX(-4px); }
-50% { transform: translateX(4px); }
-75% { transform: translateX(-4px); }
+25% { transform: translateX(-2px); }
+50% { transform: translateX(2px); }
+75% { transform: translateX(-2px); }
 100% { transform: translateX(0); }
 }
 
-.panel-title {
-font-weight: bold;
-margin-bottom: 10px;
+#word-history {
+padding: 4px;
+overflow: visible;  
+max-height: none;  
+height: auto;      
 }
 
-ul {
-padding-left: 20px;
-margin: 0;
-max-height: 80vh;
-overflow-y: auto;
+#stats-display {
+text-align: center;
 }
-
-@media (min-width: 1000px) {
-.letter {
-width: 60px;
-height: 60px;
-font-size: 36px;
-line-height: 60px;
-}
-
-.hp-bar {
-width: 60px;
-height: 8px;
-border: 1px solid black;
-margin-top: 4px;
-}
-
-.attacker-clone {
-width: 60px;
-height: 60px;
-font-size: 36px;
-line-height: 60px;
-}
-}
-
 
 </style>
 </head>
 <body>
+<center>
 
 <h2>Words War</h2>
-
-<div id="left-panel">
-<div class="panel-title">Word History</div>
-<ul id="word-history"></ul>
-</div>
-
-<div id="speed-control">
 <input type="range" id="speedSlider" min="1" max="3" step="1" value="2">
 Game Speed: <span id="speedLabel">Normal</span>
-</div>
 
-<div id="stage">
-<div id="panel">
-<div id="ai" class="team"></div>
-<div id="player" class="team"></div>
-</div>
-</div>
+<table width="500" height="200">
 
-<div id="result">Enter a word that matches the length</div>
-
-<input type="text" id="word-input" placeholder="Type your word" disabled />
+<tr>
+<td valign="top" width="30%">
+Word History
+<ul id="word-history"></ul>
+</td>
+<td valign="top">
+<table height="100%" width="100%">
+<tr>
+<td colspan="5" height="30%">
+<div id="ai" style="display: flex; justify-content: center;">
+<div id="ai-slot-0"></div>
+<div id="ai-slot-1"></div>
+<div id="ai-slot-2"></div>
+<div id="ai-slot-3"></div>
+<div id="ai-slot-4"></div>
+</div>
+</td>
+</tr>
+<tr><td colspan="5" height="40%"></td></tr>
+<tr>
+<td colspan="5" height="30%">
+<div id="player" style="display: flex; justify-content: center;">
+<div id="player-slot-0"></div>
+<div id="player-slot-1"></div>
+<div id="player-slot-2"></div>
+<div id="player-slot-3"></div>
+<div id="player-slot-4"></div>
+</div>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+<div id="result">Enter a word with correct length</div>
+<input type="text" id="word-input" placeholder="Type your word" disabled>
+<br>
 <button id="fight-button" disabled>Fight</button>
-<div id="stats-display"></div>
-<script>
+<br><br>
+<table id="stats-display" border="1" style="border-collapse: collapse;"></table>
 
+
+
+</center>
+
+<script>
 let duration = 200;
 const aiTeam = document.getElementById("ai");
 const playerTeam = document.getElementById("player");
 const resultEl = document.getElementById("result");
 const input = document.getElementById("word-input");
 const fightBtn = document.getElementById("fight-button");
-const aiHistoryEl = document.getElementById("enemy-info");
-const playerHistoryEl = document.getElementById("word-history");
-
 const usedWords = new Set();
-
-async function fetchValidWord(min = 3, max = 5) {
-while (true) {
-const length = Math.floor(Math.random() * (max - min + 1)) + min;
-try {
-const response = await fetch(`https://api.datamuse.com/words?sp=${'?'.repeat(length)}&max=1000`);
-const words = await response.json();
-const filtered = words.filter(w =>
-(!w.tags || !w.tags.includes('abbr')) &&
-/^[a-z]+$/.test(w.word) &&
-!usedWords.has(w.word.toUpperCase())
-);
-if (filtered.length === 0) continue;
-const chosen = filtered[Math.floor(Math.random() * filtered.length)];
-if (chosen.word.length === length && !usedWords.has(chosen.word.toUpperCase())) {
-return chosen.word.toUpperCase();
-}
-} catch (e) {
-return generateRandomWord(min, max);
-}
-}
-}
-
-function generateRandomWord(min = 3, max = 5) {
-const length = Math.floor(Math.random() * (max - min + 1)) + min;
-return Array.from({ length }, () =>
-String.fromCharCode(65 + Math.floor(Math.random() * 26))
-).join('');
-}
-
-function createLetterWithHP(letter) {
-const container = document.createElement("div");
-container.className = "letter-container";
-
-const letterDiv = document.createElement("div");
-letterDiv.className = "letter";
-letterDiv.textContent = letter;
-
-const hpBar = document.createElement("div");
-hpBar.className = "hp-bar";
-
-const hpFill = document.createElement("div");
-hpFill.className = "hp-fill";
-hpFill.style.width = "100%";
-
-hpBar.appendChild(hpFill);
-container.appendChild(letterDiv);
-container.appendChild(hpBar);
-
-return container;
-}
 
 const slider = document.getElementById('speedSlider');
 const speedLabel = document.getElementById('speedLabel');
-
-const speedMap = {
-1: 'Normal',
-2: 'Fast',
-3: 'Very Fast'
-};
+const speedMap = {1: 'Normal', 2: 'Fast', 3: 'Very Fast'};
 
 function updateSpeed(value) {
 speedLabel.textContent = speedMap[value];
-duration = 160-(value*50);
-
+duration = 160 - (value * 50);
 }
-
-slider.addEventListener('input', () => {
-updateSpeed(slider.value);
-});
-
+slider.addEventListener('input', () => updateSpeed(slider.value));
 updateSpeed(slider.value);
 
 const letterStats = {
@@ -362,158 +164,42 @@ Y: { hp: 141, damage: 33, accuracy: 25, evasion: 14 },
 Z: { hp: 106, damage: 45, accuracy: 38, evasion: 13 }
 };
 
-
 function getLetterStats(letter) {
 return letterStats[letter];
 }
 
 function renderLetterStats() {
-const container = document.getElementById("stats-display");
-container.innerHTML = "";
-
-const table = document.createElement("table");
-table.style.width = "auto";       
-table.style.maxWidth = "100%";     
-table.style.borderCollapse = "collapse";
-table.style.textAlign = "center";
-table.style.fontSize = "14px";
-
-function createCell(tag, text) {
-const cell = document.createElement(tag);
-cell.textContent = text;
-cell.style.border = "1px solid #ccc";
-cell.style.padding = "4px";
-return cell;
+const table = document.getElementById("stats-display");
+table.innerHTML = "";
+const header = "<tr><th>Letter</th><th>HP</th><th>DMG</th><th>ACC</th><th>EVS</th></tr>";
+const rows = Object.entries(letterStats).map(([l, s]) =>
+`<tr><td>${l}</td><td>${s.hp}</td><td>${s.damage}</td><td>${s.accuracy}</td><td>${s.evasion}</td></tr>`
+).join('');
+table.innerHTML = header + rows;
 }
-
-const headerRow = document.createElement("tr");
-headerRow.appendChild(createCell("th", "Letter"));
-headerRow.appendChild(createCell("th", "HP"));
-headerRow.appendChild(createCell("th", "Damage"));
-headerRow.appendChild(createCell("th", "Accuracy"));
-headerRow.appendChild(createCell("th", "Evasion"));
-table.appendChild(headerRow);
-
-for (const letter of Object.keys(letterStats)) {
-const row = document.createElement("tr");
-row.appendChild(createCell("td", letter));
-row.appendChild(createCell("td", letterStats[letter].hp));
-row.appendChild(createCell("td", letterStats[letter].damage));
-row.appendChild(createCell("td", letterStats[letter].accuracy));
-row.appendChild(createCell("td", letterStats[letter].evasion));
-table.appendChild(row);
-}
-
-container.appendChild(table);
-}
-
-
 
 renderLetterStats();
-
-
 
 function sanitizeInput(str) {
 return str.toUpperCase().replace(/[^A-Z]/g, "");
 }
 
 function getAliveLetters(teamEl) {
-return Array.from(teamEl.children).filter(l => !l.querySelector(".letter").classList.contains("dead"));
-}
-
-function addWordToHistory(source, word) {
-const listEl = document.getElementById("word-history");
-const li = document.createElement("li");
-li.innerHTML = `<strong>${source}:</strong> ${word}`;
-listEl.appendChild(li);
-}
-
-
-function killLetter(letterContainer) {
-const letterEl = letterContainer.querySelector(".letter");
-letterEl.classList.add("dead");
-const hpFill = letterContainer.querySelector(".hp-fill");
-hpFill.style.width = "0%";
-}
-
-function shakeElement(el, type) {
-el.classList.add("shake");
-el.style.animationDuration = type === "miss" ? "0.1s" : "0.2s";
-setTimeout(() => {
-el.classList.remove("shake");
-el.style.animationDuration = "";
-}, type === "miss" ? 100 : 200);
-}
-
-
-function getAliveLetters(teamEl) {
-return Array.from(teamEl.querySelectorAll(".letter-container")).map(container => {
-const letter = container.querySelector(".letter");
+return Array.from(teamEl.querySelectorAll(".letter-container")).map(c => {
+const letter = c.querySelector(".letter");
 return letter.classList.contains("dead") ? null : letter;
 }).filter(Boolean);
 }
 
-function animateAttack(attackerEl, defenderEl, callback) {
-const aRect = attackerEl.getBoundingClientRect();
-const dRect = defenderEl.getBoundingClientRect();
-const dx = dRect.left - aRect.left;
-const dy = dRect.top - aRect.top;
-const originalTransform = attackerEl.style.transform || "";
-
-let start = null;
-
-function moveForward(timestamp) {
-if (!start) start = timestamp;
-const progress = Math.min((timestamp - start) / duration, 1);
-attackerEl.style.transform = `translate(${dx * progress}px, ${dy * progress}px)`;
-if (progress < 1) {
-requestAnimationFrame(moveForward);
-} else {
-const acc = parseInt(attackerEl.dataset.accuracy, 10) || 0;
-const eva = parseInt(defenderEl.dataset.evasion, 10) || 0;
-const hitChance = 50 + (acc - eva);
-const hit = Math.random() * 100 < hitChance;
-
-if (hit) {
-const damage = parseInt(attackerEl.dataset.damage, 10);
-let defenderHP = parseInt(defenderEl.dataset.hp, 10) - damage;
-defenderHP = Math.max(defenderHP, 0);
-defenderEl.dataset.hp = defenderHP;
-
-showFloatingText(defenderEl.parentElement, damage);
-
-const hpFill = defenderEl.parentElement.querySelector(".hp-fill");
-if (hpFill) {
-const maxHp = parseInt(defenderEl.dataset.maxHp, 10);
-hpFill.style.width = (defenderHP / maxHp) * 100 + '%';
+function addWordToHistory(source, word) {
+const li = document.createElement("li");
+li.innerHTML = `<strong>${source}:</strong> ${word}`;
+document.getElementById("word-history").appendChild(li);
 }
 
-if (defenderHP === 0) {
-killLetter(defenderEl.parentElement);
-}
-
-shakeElement(defenderEl.parentElement, "hit");
-} else {
-showFloatingText(defenderEl.parentElement, "MISS");
-}
-
-setTimeout(() => {
-start = null;
-requestAnimationFrame(function moveBack(timestamp) {
-if (!start) start = timestamp;
-const backProgress = Math.min((timestamp - start) / duration, 1);
-attackerEl.style.transform = `translate(${dx * (1 - backProgress)}px, ${dy * (1 - backProgress)}px)`;
-if (backProgress < 1) {
-requestAnimationFrame(moveBack);
-} else {
-attackerEl.style.transform = originalTransform;
-callback(hit);
-}
-});
-}, 200);
-}
-}
-requestAnimationFrame(moveForward);
+function killLetter(container) {
+container.querySelector(".letter").classList.add("dead");
+container.querySelector(".hp-fill").style.width = "0%";
 }
 
 function showFloatingText(container, text) {
@@ -525,115 +211,165 @@ floatText.style.top = "0";
 floatText.style.transform = "translateX(-50%)";
 floatText.style.color = text === "MISS" ? "gray" : "red";
 floatText.style.fontWeight = "bold";
-floatText.style.pointerEvents = "none";
-floatText.style.userSelect = "none";
 floatText.style.transition = "transform 1s ease-out, opacity 1s ease-out";
 container.style.position = "relative";
 container.appendChild(floatText);
-
 requestAnimationFrame(() => {
-floatText.style.transform = "translateX(-50%) translateY(-40px)";
+floatText.style.transform += " translateY(-40px)";
 floatText.style.opacity = "0";
 });
+setTimeout(() => container.removeChild(floatText), 1000);
+}
+
+function animateAttack(attackerEl, defenderEl, callback) {
+const aBox = attackerEl.getBoundingClientRect();
+const dBox = defenderEl.getBoundingClientRect();
+const dx = dBox.left - aBox.left;
+const dy = dBox.top - aBox.top;
+const original = attackerEl.style.transform || "";
+let start = null;
+
+function forward(t) {
+if (!start) start = t;
+const p = Math.min((t - start) / duration, 1);
+attackerEl.style.transform = `translate(${dx * p}px, ${dy * p}px)`;
+if (p < 1) return requestAnimationFrame(forward);
+
+const acc = +attackerEl.dataset.accuracy;
+const eva = +defenderEl.dataset.evasion;
+const hit = Math.random() * 100 < 50 + (acc - eva);
+if (hit) {
+const dmg = +attackerEl.dataset.damage;
+let hp = +defenderEl.dataset.hp - dmg;
+hp = Math.max(hp, 0);
+defenderEl.dataset.hp = hp;
+const fill = defenderEl.parentElement.querySelector(".hp-fill");
+if (fill) fill.style.width = (hp / +defenderEl.dataset.maxHp) * 100 + "%";
+if (hp === 0) killLetter(defenderEl.parentElement);
+showFloatingText(defenderEl.parentElement, dmg);
+} else {
+showFloatingText(defenderEl.parentElement, "MISS");
+}
 
 setTimeout(() => {
-container.removeChild(floatText);
-}, 1000);
+start = null;
+requestAnimationFrame(function back(t2) {
+if (!start) start = t2;
+const p2 = Math.min((t2 - start) / duration, 1);
+attackerEl.style.transform = `translate(${dx * (1 - p2)}px, ${dy * (1 - p2)}px)`;
+if (p2 < 1) return requestAnimationFrame(back);
+attackerEl.style.transform = original;
+callback();
+});
+}, 200);
+}
+
+requestAnimationFrame(forward);
 }
 
 function createTeamFromWord(teamEl, word) {
-teamEl.innerHTML = "";
-for (const ch of word) {
+for (let i = 0; i < 5; i++) {
+const slot = document.getElementById(`${teamEl.id}-slot-${i}`);
+slot.innerHTML = "";
+if (i < word.length) {
+const ch = word[i];
+const stats = getLetterStats(ch);
 const container = document.createElement("div");
 container.className = "letter-container";
 
 const letter = document.createElement("div");
 letter.className = "letter";
 letter.textContent = ch;
+Object.assign(letter.dataset, {
+hp: stats.hp, maxHp: stats.hp,
+damage: stats.damage,
+accuracy: stats.accuracy,
+evasion: stats.evasion
+});
 
-const stats = getLetterStats(ch);
-letter.dataset.hp = stats.hp;
-letter.dataset.maxHp = stats.hp;
-letter.dataset.damage = stats.damage;
+const bar = document.createElement("div");
+bar.className = "hp-bar";
+const fill = document.createElement("div");
+fill.className = "hp-fill";
+bar.appendChild(fill);
 
-const hpBar = document.createElement("div");
-hpBar.className = "hp-bar";
-
-const hpFill = document.createElement("div");
-hpFill.className = "hp-fill";
-hpFill.style.width = "100%";
-
-hpBar.appendChild(hpFill);
 container.appendChild(letter);
-container.appendChild(hpBar);
-teamEl.appendChild(container);
+container.appendChild(bar);
+slot.appendChild(container);
 }
 }
+}
 
-
-
-
-function fightLoop(attackerTeam, defenderTeam, onDone) {
+function fightLoop(attackerTeam, defenderTeam, done) {
 const attackers = getAliveLetters(attackerTeam);
 const defenders = getAliveLetters(defenderTeam);
-if (attackers.length === 0 || defenders.length === 0) {
-onDone();
-return;
-}
+if (!attackers.length || !defenders.length) return done();
 const attacker = attackers[Math.floor(Math.random() * attackers.length)];
 const defender = defenders[Math.floor(Math.random() * defenders.length)];
-animateAttack(attacker, defender, (hit) => {
-if (getAliveLetters(defenderTeam).length === 0) return onDone();
-setTimeout(() => {
-fightLoop(defenderTeam, attackerTeam, onDone);
-}, 300);
+animateAttack(attacker, defender, () => {
+if (!getAliveLetters(defenderTeam).length) return done();
+setTimeout(() => fightLoop(defenderTeam, attackerTeam, done), 300);
 });
 }
 
-function resetStage(aiWord, playerWord) {
-createTeamFromWord(aiTeam, aiWord);
-createTeamFromWord(playerTeam, playerWord);
+function generateRandomWord(min = 3, max = 5) {
+const len = Math.floor(Math.random() * (max - min + 1)) + min;
+return Array.from({ length: len }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
+}
+
+async function fetchValidWord(min = 3, max = 5) {
+while (true) {
+const len = Math.floor(Math.random() * (max - min + 1)) + min;
+try {
+const res = await fetch(`https://api.datamuse.com/words?sp=${'?'.repeat(len)}&max=1000`);
+const json = await res.json();
+const words = json.filter(w =>
+/^[a-z]+$/.test(w.word) && !usedWords.has(w.word.toUpperCase())
+);
+if (!words.length) continue;
+const word = words[Math.floor(Math.random() * words.length)].word.toUpperCase();
+if (word.length === len) return word;
+} catch {
+return generateRandomWord(min, max);
+}
+}
 }
 
 let currentAIWord = "";
 let currentPlayerWord = "";
 
-async function startNewRound() {
-resultEl.textContent = "Loading AI word...";
+async function startNewRound(newAI = true) {
+resultEl.textContent = newAI ? "Loading AI word..." : "Try again!";
 input.disabled = true;
 fightBtn.disabled = true;
 
+if (newAI) {
 currentAIWord = await fetchValidWord(3, 5);
 usedWords.add(currentAIWord);
-
 addWordToHistory("AI", currentAIWord);
-resetStage(currentAIWord, "");
+}
+createTeamFromWord(aiTeam, currentAIWord);
 
+
+createTeamFromWord(playerTeam, "");
 input.disabled = false;
 input.value = "";
 input.setAttribute("maxlength", currentAIWord.length);
-input.placeholder = `Type a word`;
 resultEl.textContent = `Enter a word that matches the length 0/${currentAIWord.length}`;
-fightBtn.disabled = true;
 }
 
 
 startNewRound();
 
-input.addEventListener("input", async () => {
+input.addEventListener("input", () => {
 input.value = sanitizeInput(input.value);
-const currentLength = input.value.length;
-const maxLength = currentAIWord.length;
-if (currentLength === maxLength) {
-if (usedWords.has(input.value)) {
-resultEl.textContent = `Word already used! Try another. (${currentLength}/${maxLength})`;
-fightBtn.disabled = true;
-return;
-}
-resultEl.textContent = `Ready to fight! (${currentLength}/${maxLength})`;
+const len = input.value.length;
+const max = currentAIWord.length;
+if (len === max && !usedWords.has(input.value)) {
+resultEl.textContent = `Ready to fight! (${len}/${max})`;
 fightBtn.disabled = false;
 } else {
-resultEl.textContent = `Enter a word that matches the length ${currentLength}/${maxLength}`;
+resultEl.textContent = usedWords.has(input.value) ? "Already used!" : `Enter a word that matches the length ${len}/${max}`;
 fightBtn.disabled = true;
 }
 });
@@ -641,44 +377,32 @@ fightBtn.disabled = true;
 fightBtn.addEventListener("click", () => {
 currentPlayerWord = input.value;
 usedWords.add(currentPlayerWord);
-
 addWordToHistory("Player", currentPlayerWord);
-resetStage(currentAIWord, currentPlayerWord);
+createTeamFromWord(playerTeam, currentPlayerWord);
+resultEl.textContent = "Fight started!";
 input.disabled = true;
 fightBtn.disabled = true;
-resultEl.textContent = "Fight started!";
 
-const firstAttacker = Math.random() < 0.5 ? playerTeam : aiTeam;
-const firstDefender = firstAttacker === playerTeam ? aiTeam : playerTeam;
+const first = Math.random() < 0.5 ? playerTeam : aiTeam;
+const second = first === playerTeam ? aiTeam : playerTeam;
 
-fightLoop(firstAttacker, firstDefender, () => {
-const playerAlive = getAliveLetters(playerTeam).length;
-const aiAlive = getAliveLetters(aiTeam).length;
-
-if (playerAlive === 0 && aiAlive > 0) {
-resultEl.textContent = "AI wins!";
-setTimeout(() => {
-createTeamFromWord(playerTeam, "");
-resetStage(currentAIWord, "");
-resultEl.textContent = "Enter a word that matches the length";
-input.disabled = false;
-input.value = "";
-input.setAttribute("maxlength", currentAIWord.length);
-}, 1000);
-} else if (aiAlive === 0 && playerAlive > 0) {
+fightLoop(first, second, () => {
+const p = getAliveLetters(playerTeam).length;
+const a = getAliveLetters(aiTeam).length;
+if (p > 0 && a === 0) {
 resultEl.textContent = "Player wins!";
-setTimeout(() => {
-startNewRound();
-}, 1000);
+setTimeout(() => startNewRound(true), 1000);
+} else if (a > 0 && p === 0) {
+resultEl.textContent = `AI wins with: ${currentAIWord}`;
+setTimeout(() => startNewRound(false), 1000);
 } else {
 resultEl.textContent = "Draw!";
-setTimeout(() => {
-startNewRound();
-}, 1000);
+setTimeout(() => startNewRound(false), 1000);
 }
-});
-});
 
+
+});
+});
 </script>
 </body>
 </html>
