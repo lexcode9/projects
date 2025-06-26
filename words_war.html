@@ -5,7 +5,7 @@
 <title>Words War</title>
 <style>
 body {
-font-size: 14px;
+font-size: 16px;
 }
 
 .letter-container {
@@ -15,7 +15,7 @@ margin: 2px;
 
 .letter {
 font-weight: bold;
-font-size: 18px;
+font-size: 30px;
 }
 
 .hp-bar {
@@ -31,21 +31,21 @@ width: 100%;
 }
 
 .delay-bar {
-  width: 40px;
-  height: 5px;
-  background: #ccc;
-  margin-top: 4px;
+width: 40px;
+height: 5px;
+background: #ccc;
+margin-top: 4px;
 }
 
 .delay-fill {
-  height: 100%;
-  background: yellow;
-  width: 100%;
+height: 100%;
+background: yellow;
+width: 100%;
 }
 
 .letter.dead {
-  color: gray;
-  opacity: 0.5;
+color: gray;
+opacity: 0.5;
 }
 
 
@@ -149,48 +149,67 @@ slider.addEventListener('input', () => updateSpeed(slider.value));
 updateSpeed(slider.value);
 
 const letterStats = {
-  A: { hp: 125, damage: 80, delay: 5, accuracy: 30, evasion: 20 },
-  B: { hp: 135, damage: 42, delay: 4, accuracy: 34, evasion: 19 },
-  C: { hp: 110, damage: 37, delay: 3, accuracy: 22, evasion: 11 },
-  D: { hp: 142, damage: 45, delay: 6, accuracy: 38, evasion: 26 },
-  E: { hp: 156, damage: 50, delay: 5, accuracy: 38, evasion: 25 },
-  F: { hp: 108, damage: 49, delay: 3, accuracy: 24, evasion: 10 },
-  G: { hp: 130, damage: 30, delay: 7, accuracy: 28, evasion: 17 },
-  H: { hp: 115, damage: 38, delay: 6, accuracy: 32, evasion: 21 },
-  I: { hp: 125, damage: 40, delay: 5, accuracy: 30, evasion: 40 },
-  J: { hp: 105, damage: 44, delay: 4, accuracy: 21, evasion: 13 },
-  K: { hp: 138, damage: 36, delay: 7, accuracy: 30, evasion: 29 },
-  L: { hp: 122, damage: 48, delay: 3, accuracy: 33, evasion: 24 },
-  M: { hp: 109, damage: 34, delay: 4, accuracy: 40, evasion: 20 },
-  N: { hp: 145, damage: 39, delay: 6, accuracy: 25, evasion: 18 },
-  O: { hp: 250, damage: 40, delay: 5, accuracy: 30, evasion: 20 },
-  P: { hp: 127, damage: 32, delay: 3, accuracy: 26, evasion: 27 },
-  Q: { hp: 101, damage: 43, delay: 6, accuracy: 20, evasion: 23 },
-  R: { hp: 133, damage: 31, delay: 4, accuracy: 23, evasion: 15 },
-  S: { hp: 144, damage: 46, delay: 3, accuracy: 35, evasion: 28 },
-  T: { hp: 111, damage: 40, delay: 7, accuracy: 39, evasion: 22 },
-  U: { hp: 125, damage: 40, delay: 5, accuracy: 60, evasion: 20 },
-  V: { hp: 117, damage: 38, delay: 4, accuracy: 34, evasion: 26 },
-  W: { hp: 134, damage: 49, delay: 6, accuracy: 21, evasion: 30 },
-  X: { hp: 119, damage: 30, delay: 3, accuracy: 27, evasion: 17 },
-  Y: { hp: 141, damage: 33, delay: 7, accuracy: 25, evasion: 14 },
-  Z: { hp: 106, damage: 45, delay: 6, accuracy: 38, evasion: 13 }
+A: { hp: 125, damage: 80, delay: 5, accuracy: 30, evasion: 20 },
+B: { hp: 135, damage: 42, delay: 4, accuracy: 34, evasion: 19 },
+C: { hp: 110, damage: 37, delay: 3, accuracy: 22, evasion: 11 },
+D: { hp: 142, damage: 45, delay: 6, accuracy: 38, evasion: 26 },
+E: { hp: 156, damage: 50, delay: 5, accuracy: 38, evasion: 25 },
+F: { hp: 108, damage: 49, delay: 3, accuracy: 24, evasion: 10 },
+G: { hp: 130, damage: 30, delay: 7, accuracy: 28, evasion: 17 },
+H: { hp: 115, damage: 38, delay: 6, accuracy: 32, evasion: 21 },
+I: { hp: 125, damage: 40, delay: 5, accuracy: 30, evasion: 40 },
+J: { hp: 105, damage: 44, delay: 4, accuracy: 21, evasion: 13 },
+K: { hp: 138, damage: 36, delay: 7, accuracy: 30, evasion: 29 },
+L: { hp: 122, damage: 48, delay: 3, accuracy: 33, evasion: 24 },
+M: { hp: 109, damage: 34, delay: 4, accuracy: 40, evasion: 20 },
+N: { hp: 145, damage: 39, delay: 6, accuracy: 25, evasion: 18 },
+O: { hp: 250, damage: 40, delay: 5, accuracy: 30, evasion: 20 },
+P: { hp: 127, damage: 32, delay: 3, accuracy: 26, evasion: 27 },
+Q: { hp: 101, damage: 43, delay: 6, accuracy: 20, evasion: 23 },
+R: { hp: 133, damage: 31, delay: 4, accuracy: 23, evasion: 15 },
+S: { hp: 144, damage: 46, delay: 3, accuracy: 35, evasion: 28 },
+T: { hp: 111, damage: 40, delay: 7, accuracy: 39, evasion: 22 },
+U: { hp: 125, damage: 40, delay: 5, accuracy: 60, evasion: 20 },
+V: { hp: 117, damage: 38, delay: 4, accuracy: 34, evasion: 26 },
+W: { hp: 134, damage: 49, delay: 6, accuracy: 21, evasion: 30 },
+X: { hp: 119, damage: 30, delay: 3, accuracy: 27, evasion: 17 },
+Y: { hp: 141, damage: 33, delay: 7, accuracy: 25, evasion: 14 },
+Z: { hp: 106, damage: 45, delay: 6, accuracy: 38, evasion: 13 }
 };
 
 
 function getLetterStats(letter) {
 return letterStats[letter];
 }
-
 function renderLetterStats() {
 const table = document.getElementById("stats-display");
 table.innerHTML = "";
-const header = "<tr><th>Letter</th><th>HP</th><th>DMG</th><th>ACC</th><th>EVS</th></tr>";
-const rows = Object.entries(letterStats).map(([l, s]) =>
-`<tr><td>${l}</td><td>${s.hp}</td><td>${s.damage}</td><td>${s.accuracy}</td><td>${s.evasion}</td></tr>`
-).join('');
+
+const header = `
+<tr>
+<th>Letter</th>
+<th>HP</th>
+<th>DMG</th>
+<th>DEL</th>
+<th>ACC</th>
+<th>EVA</th>
+</tr>
+`;
+
+const rows = Object.entries(letterStats).map(([l, s]) => `
+<tr>
+<td>${l}</td>
+<td>${s.hp}</td>
+<td>${s.damage}</td>
+<td>${s.delay}</td>
+<td>${s.accuracy}</td>
+<td>${s.evasion}</td>
+</tr>
+`).join('');
+
 table.innerHTML = header + rows;
 }
+
 
 renderLetterStats();
 
@@ -282,62 +301,62 @@ requestAnimationFrame(forward);
 }
 
 function runCombatCycle(attackerTeam, defenderTeam, done) {
-  function step() {
-    const attackers = getAliveLetters(attackerTeam);
-    const defenders = getAliveLetters(defenderTeam);
-    if (!attackers.length || !defenders.length) return done();
+function step() {
+const attackers = getAliveLetters(attackerTeam);
+const defenders = getAliveLetters(defenderTeam);
+if (!attackers.length || !defenders.length) return done();
 
-    const allLetters = [...attackers, ...defenders];
+const allLetters = [...attackers, ...defenders];
 
-    // Step 1: Check if anyone is ready to attack (already at max delay)
-    const readyAttackers = allLetters.filter(letter => {
-      const maxDelay = +letter.dataset.delay;
-      const current = +letter.dataset.currentDelay || 0;
-      return current >= maxDelay;
-    });
+// Step 1: Check if anyone is ready to attack (already at max delay)
+const readyAttackers = allLetters.filter(letter => {
+const maxDelay = +letter.dataset.delay;
+const current = +letter.dataset.currentDelay || 0;
+return current >= maxDelay;
+});
 
-    if (readyAttackers.length > 0) {
-      // Someone is ready to attack, so we pause delay ticking
-      const attacker = readyAttackers[Math.floor(Math.random() * readyAttackers.length)];
-      const attackerTeamId = attacker.closest("#player, #ai").id;
-      const targetTeam = document.getElementById(attackerTeamId === "player" ? "ai" : "player");
-      const targets = getAliveLetters(targetTeam);
-      if (!targets.length) return done();
+if (readyAttackers.length > 0) {
+// Someone is ready to attack, so we pause delay ticking
+const attacker = readyAttackers[Math.floor(Math.random() * readyAttackers.length)];
+const attackerTeamId = attacker.closest("#player, #ai").id;
+const targetTeam = document.getElementById(attackerTeamId === "player" ? "ai" : "player");
+const targets = getAliveLetters(targetTeam);
+if (!targets.length) return done();
 
-      const defender = targets[Math.floor(Math.random() * targets.length)];
+const defender = targets[Math.floor(Math.random() * targets.length)];
 
-      // Reset attacker's delay
-      attacker.dataset.currentDelay = 0;
-      const fill = attacker.parentElement.querySelector('.delay-fill');
-      if (fill) fill.style.width = '0%';
+// Reset attacker's delay
+attacker.dataset.currentDelay = 0;
+const fill = attacker.parentElement.querySelector('.delay-fill');
+if (fill) fill.style.width = '0%';
 
-      // Perform the attack
-      animateAttack(attacker, defender, () => {
-        if (!getAliveLetters(targetTeam).length) return done();
-        setTimeout(step, 300);
-      });
+// Perform the attack
+animateAttack(attacker, defender, () => {
+if (!getAliveLetters(targetTeam).length) return done();
+setTimeout(step, duration);
+});
 
-    } else {
-      // No one is ready — this is the delay increment phase
-      allLetters.forEach(letter => {
-        const maxDelay = +letter.dataset.delay;
-        let current = +letter.dataset.currentDelay || 0;
+} else {
+// No one is ready — this is the delay increment phase
+allLetters.forEach(letter => {
+const maxDelay = +letter.dataset.delay;
+let current = +letter.dataset.currentDelay || 0;
 
-        if (current < maxDelay) {
-          current++;
-          letter.dataset.currentDelay = current;
+if (current < maxDelay) {
+current++;
+letter.dataset.currentDelay = current;
 
-          const fill = letter.parentElement.querySelector('.delay-fill');
-          if (fill) fill.style.width = (current / maxDelay) * 100 + '%';
-        }
-      });
+const fill = letter.parentElement.querySelector('.delay-fill');
+if (fill) fill.style.width = (current / maxDelay) * 100 + '%';
+}
+});
 
-      // Continue delay ticking
-      setTimeout(step, 300);
-    }
-  }
+// Continue delay ticking
+setTimeout(step, duration);
+}
+}
 
-  step(); // Start the loop
+step(); // Start the loop
 }
 
 
@@ -346,53 +365,53 @@ function runCombatCycle(attackerTeam, defenderTeam, done) {
 
 
 function createTeamFromWord(teamEl, word) {
-  for (let i = 0; i < 5; i++) {
-    const slot = document.getElementById(`${teamEl.id}-slot-${i}`);
-    slot.innerHTML = "";
-    if (i < word.length) {
-      const ch = word[i];
-      const stats = getLetterStats(ch);
-      const container = document.createElement("div");
-      container.className = "letter-container";
+for (let i = 0; i < 5; i++) {
+const slot = document.getElementById(`${teamEl.id}-slot-${i}`);
+slot.innerHTML = "";
+if (i < word.length) {
+const ch = word[i];
+const stats = getLetterStats(ch);
+const container = document.createElement("div");
+container.className = "letter-container";
 
-      const letter = document.createElement("div");
-      letter.className = "letter";
-      letter.textContent = ch;
-      
-      Object.assign(letter.dataset, {
-        hp: stats.hp,
-        maxHp: stats.hp,
-        damage: stats.damage,
-        accuracy: stats.accuracy,
-        evasion: stats.evasion,
-        delay: stats.delay,
-        maxDelay: stats.delay
-      });
+const letter = document.createElement("div");
+letter.className = "letter";
+letter.textContent = ch;
 
-      const hpBar = document.createElement("div");
-      hpBar.className = "hp-bar";
-      const hpFill = document.createElement("div");
-      hpFill.className = "hp-fill";
-      hpBar.appendChild(hpFill);
+Object.assign(letter.dataset, {
+hp: stats.hp,
+maxHp: stats.hp,
+damage: stats.damage,
+accuracy: stats.accuracy,
+evasion: stats.evasion,
+delay: stats.delay,
+maxDelay: stats.delay
+});
 
-      const delayBar = document.createElement("div");
-      delayBar.className = "delay-bar";
-      const delayFill = document.createElement("div");
-      delayFill.className = "delay-fill";
-      delayBar.appendChild(delayFill);
+const hpBar = document.createElement("div");
+hpBar.className = "hp-bar";
+const hpFill = document.createElement("div");
+hpFill.className = "hp-fill";
+hpBar.appendChild(hpFill);
 
-      container.appendChild(letter);
-      container.appendChild(hpBar);
-      container.appendChild(delayBar);
-      slot.appendChild(container);
-    }
-  }
+const delayBar = document.createElement("div");
+delayBar.className = "delay-bar";
+const delayFill = document.createElement("div");
+delayFill.className = "delay-fill";
+delayBar.appendChild(delayFill);
+
+container.appendChild(letter);
+container.appendChild(hpBar);
+container.appendChild(delayBar);
+slot.appendChild(container);
+}
+}
 }
 
 async function isValidWord(word) {
-  const res = await fetch(`https://api.datamuse.com/words?sp=${word.toLowerCase()}&max=1`);
-  const list = await res.json();
-  return list.length > 0 && list[0].word.toUpperCase() === word.toUpperCase();
+const res = await fetch(`https://api.datamuse.com/words?sp=${word.toLowerCase()}&max=1`);
+const list = await res.json();
+return list.length > 0 && list[0].word.toUpperCase() === word.toUpperCase();
 }
 
 
@@ -446,28 +465,28 @@ resultEl.textContent = `Enter a word that matches the length 0/${currentAIWord.l
 startNewRound();
 
 input.addEventListener("input", async () => {
-  input.value = sanitizeInput(input.value);
-  const len = input.value.length;
-  const max = currentAIWord.length;
+input.value = sanitizeInput(input.value);
+const len = input.value.length;
+const max = currentAIWord.length;
 
-  const word = input.value;
-  if (len === max && !usedWords.has(word)) {
-    resultEl.textContent = "Checking word...";
-    fightBtn.disabled = true;
+const word = input.value;
+if (len === max && !usedWords.has(word)) {
+resultEl.textContent = "Checking word...";
+fightBtn.disabled = true;
 
-    const valid = await isValidWord(word);
-    if (valid) {
-      resultEl.textContent = `Ready to fight! (${len}/${max})`;
-      fightBtn.disabled = false;
-    } else {
-      resultEl.textContent = "Not a valid word!";
-    }
-  } else {
-    resultEl.textContent = usedWords.has(word)
-      ? "Already used!"
-      : `Enter a word that matches the length ${len}/${max}`;
-    fightBtn.disabled = true;
-  }
+const valid = await isValidWord(word);
+if (valid) {
+resultEl.textContent = `Ready to fight! (${len}/${max})`;
+fightBtn.disabled = false;
+} else {
+resultEl.textContent = "Not a valid word!";
+}
+} else {
+resultEl.textContent = usedWords.has(word)
+? "Already used!"
+: `Enter a word that matches the length ${len}/${max}`;
+fightBtn.disabled = true;
+}
 });
 
 
