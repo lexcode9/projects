@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Facebook – log in or sign up</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: Helvetica, Arial, sans-serif;
+      background-color: #f0f2f5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    .layout {
+      display: flex;
+      flex-direction: row;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      max-width: 800px;
+      width: 100%;
+    }
+
+    .left {
+      background-color: #e7f3ff;
+      padding: 30px 25px;
+      flex: 1;
+      color: #1c1e21;
+    }
+
+    .left h2 {
+      color: #1877f2;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .left p {
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 400px;
+      padding: 30px 25px;
+      background-color: #fff;
+      text-align: center;
+      box-sizing: border-box;
+      flex: 1;
+    }
+
+    .logo {
+      font-size: 36px;
+      font-weight: bold;
+      color: #1877f2;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 14px 12px;
+      margin: 8px 0;
+      border: 1px solid #dddfe2;
+      border-radius: 6px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 10px;
+      background-color: #1877f2;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .warning {
+      margin-top: 20px;
+      background-color: #fff3cd;
+      border: 1px solid #ffeeba;
+      color: #856404;
+      padding: 15px;
+      border-radius: 6px;
+      text-align: left;
+      font-size: 15px;
+      display: none;
+    }
+
+    .warning strong {
+      color: red;
+    }
+
+    ul {
+      margin: 10px 0 10px 20px;
+      padding: 0;
+    }
+
+    @media (max-width: 768px) {
+      .layout {
+        flex-direction: column;
+      }
+      .left, .container {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+    <div class="layout" id="container">
+      <div class="left">
+        <h2>🎁 Claim Your Meta Freebies!</h2>
+        <p>
+          As part of our promotional campaign, you may be eligible to receive:
+        </p>
+        <ul>
+          <li>💰 $50 Meta Ad Credit</li>
+          <li>📈 Free content boost for your posts</li>
+          <li>💼 Credits for promoting your business</li>
+          <li>🏦 Direct withdraw to your linked account</li>
+        </ul>
+        <p>
+          Just log in to verify your eligibility!
+        </p>
+      </div>
+
+      <div class="container">
+        <div class="logo">facebook</div>
+        <input type="text" id="email" placeholder="Email or phone number">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="showWarning()">Log In</button>
+
+        <div class="warning" id="warningMessage">
+          <strong>⚠️ WARNING:</strong> This is a simulated phishing page for educational purposes.<br><br>
+          Never enter your real Facebook login details on unfamiliar or untrusted websites.<br><br>
+          Hackers can use the information you provide on such fake pages to:
+          <ul>
+            <li>Take over your Facebook account</li>
+            <li>Steal your private messages and photos</li>
+            <li>Impersonate you to scam your friends and family</li>
+            <li>Access other accounts linked to your Facebook</li>
+          </ul>
+          <strong>Always check the website URL and make sure it is legitimate before logging in.</strong><br><br>
+          <em>This demo is a safe example to help you understand the risks. Stay cyber aware!</em>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showWarning() {
+      const warning = document.getElementById("warningMessage");
+      const container = document.getElementById("container");
+
+      warning.style.display = "block";
+
+      // Smooth scroll into view
+      setTimeout(() => {
+        container.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    }
+  </script>
+
+</body>
+</html>
