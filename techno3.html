@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Desert Island Voting</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 15px;
+      max-width: 900px;
+      margin: 0 auto 30px;
+    }
+
+    .item {
+      border: 2px solid #ccc;
+      padding: 20px;
+      cursor: pointer;
+      font-size: 24px;
+      border-radius: 10px;
+      transition: all 0.2s;
+      background-color: #f9f9f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .item.selected {
+      border-color: #007bff;
+      background-color: #cce5ff;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    table {
+      margin: 30px auto;
+      border-collapse: collapse;
+      width: 80%;
+      max-width: 600px;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #aaa;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Pick 5 Items for Desert Island Survival! 🏝️</h1>
+
+  <div class="grid" id="items-grid"></div>
+
+  <button onclick="submitVotes()">Submit</button>
+
+  <div class="stats" id="stats">
+    <h2>Voting Stats</h2>
+    <div>Total Votes: <span id="total">0</span></div>
+    <table id="stats-table">
+      <thead>
+        <tr><th>Item</th><th>Votes</th><th>Percent</th></tr>
+      </thead>
+      <tbody id="stats-body"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const items = [
+      { name: 'Knife', emoji: '🔪' },
+      { name: 'Fishing Rod', emoji: '🎣' },
+      { name: 'Water Filter', emoji: '💧' },
+      { name: 'Tent', emoji: '🏕️' },
+      { name: 'Fire Starter', emoji: '🔥' },
+      { name: 'Rope', emoji: '🪢' },
+      { name: 'First Aid Kit', emoji: '🩹' },
+      { name: 'Compass', emoji: '🧭' },
+      { name: 'Hatchet', emoji: '🪓' },
+      { name: 'Battery Pack', emoji: '🔋' }
+    ];
+
+    const counts = {};
+    const selectedItems = new Set();
+
+    const grid = document.getElementById('items-grid');
+    const statsBody = document.getElementById('stats-body');
+
+    items.forEach(({ name, emoji }) => {
+      counts[name] = 0;
+
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `<div style="font-size: 40px;">${emoji}</div><div>${name}</div>`;
+      div.onclick = () => toggleSelection(div, name);
+      grid.appendChild(div);
+    });
+
+    function toggleSelection(div, name) {
+	  if (selectedItems.has(name)) {
+		selectedItems.delete(name);
+		div.classList.remove('selected');
+	  } else if (selectedItems.size < 5) {
+		selectedItems.add(name);
+		div.classList.add('selected');
+	  }
+	}
+
+
+    function submitVotes() {
+      if (selectedItems.size !== 5) {
+        alert("You must select exactly 5 items.");
+        return;
+      }
+
+      selectedItems.forEach(name => counts[name]++);
+      selectedItems.clear();
+      document.querySelectorAll('.item').forEach(div => div.classList.remove('selected'));
+      updateStats();
+    }
+
+    function updateStats() {
+      const total = Object.values(counts).reduce((a, b) => a + b, 0);
+      document.getElementById('total').textContent = total;
+
+      const data = items.map(({ name, emoji }) => {
+        const voteCount = counts[name];
+        const pct = total === 0 ? 0 : Math.round((voteCount / total) * 100);
+        return { name, emoji, voteCount, pct };
+      });
+
+      // Sort by percentage descending
+      data.sort((a, b) => b.pct - a.pct);
+
+      statsBody.innerHTML = '';
+      data.forEach(({ name, emoji, voteCount, pct }) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${emoji} ${name}</td><td>${voteCount}</td><td>${pct}%</td>`;
+        statsBody.appendChild(row);
+      });
+    }
+  </script>
+
+</body>
+</html>
