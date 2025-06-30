@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>House Type Voting</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+
+    .boxes {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    .box {
+      width: 160px;
+      height: 160px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 100px;
+      border: 2px solid #ccc;
+      border-radius: 12px;
+      user-select: none;
+      transition: background-color 0.2s ease;
+    }
+
+    .box:hover {
+      background-color: #f0f0f0;
+    }
+
+    .stats {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🏠 Vote for Your Favorite House Type!</h2>
+
+  <div class="boxes">
+    <div class="box" onclick="vote('single')" title="Single-Family Home">🏡</div>
+    <div class="box" onclick="vote('bungalow')" title="Bungalow">🏠</div>
+    <div class="box" onclick="vote('townhouse')" title="Townhouse">🏘️</div>
+    <div class="box" onclick="vote('apartment')" title="Apartment">🏙️</div>
+    <div class="box" onclick="vote('condo')" title="Condominium">🏢</div>
+  </div>
+
+  <div class="stats">
+    <div><b>Total Votes: <span id="total">0</span></b></div>
+    <div>Single-Family Home: <span id="single-pct">0%</span></div>
+    <div>Bungalow: <span id="bungalow-pct">0%</span></div>
+    <div>Townhouse: <span id="townhouse-pct">0%</span></div>
+    <div>Apartment: <span id="apartment-pct">0%</span></div>
+    <div>Condominium: <span id="condo-pct">0%</span></div>
+  </div>
+
+  <script>
+    const counts = {
+      single: 0,
+      bungalow: 0,
+      townhouse: 0,
+      apartment: 0,
+      condo: 0
+    };
+
+    function vote(type) {
+      counts[type]++;
+      updateStats();
+    }
+
+    function updateStats() {
+      const total = Object.values(counts).reduce((sum, val) => sum + val, 0);
+      document.getElementById('total').textContent = total;
+
+      function percent(count) {
+        return total === 0 ? '0%' : Math.round((count / total) * 100) + '%';
+      }
+
+      document.getElementById('single-pct').textContent = percent(counts.single);
+      document.getElementById('bungalow-pct').textContent = percent(counts.bungalow);
+      document.getElementById('townhouse-pct').textContent = percent(counts.townhouse);
+      document.getElementById('apartment-pct').textContent = percent(counts.apartment);
+      document.getElementById('condo-pct').textContent = percent(counts.condo);
+    }
+  </script>
+
+</body>
+</html>
