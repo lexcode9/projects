@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>ChatbotZero</title></head>
+<body>
+<center>
+  <h2>ChatbotZero</h2>
+  <h6>The origin of conversational AI — from nothing to something.</h6>
+  <div id="chatHistory" style="border:1px solid black; height:200px; width:300px; overflow-y:auto;"></div>
+  <input type="text" id="userInput" placeholder="Type your message"><br>
+  <button id="sendBtn">Send</button>
+  <table id="statsTable" border="1">
+    <thead><tr><th>Prompt</th><th>Reply</th><th>Points</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</center>
+
+<script>
+  const chatData = [];
+
+  const chatHistory = document.getElementById('chatHistory');
+  const userInput = document.getElementById('userInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const statsTableBody = document.querySelector('#statsTable tbody');
+
+  let lastBotReply = null;
+
+  function addMessage(sender, text) {
+    const div = document.createElement('div');
+    div.textContent = `${sender}: ${text}`;
+    chatHistory.appendChild(div);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+  }
+
+function updateStats() {
+  statsTableBody.innerHTML = '';
+
+  const sorted = [...chatData]
+    .sort((a, b) => {
+      const replyA = a.reply ? a.reply : 'zzzz';
+      const replyB = b.reply ? b.reply : 'zzzz';
+      return replyA.localeCompare(replyB);
+    })
+    .sort((a, b) => b.points - a.points)
+    .sort((a, b) => a.prompt.localeCompare(b.prompt));
+
+  sorted.forEach(entry => {
+    const row = document.createElement('tr');
+    row.innerHTML = `<td>${entry.prompt}</td><td>${entry.reply || '<null>'}</td><td>${entry.points}</td>`;
+    statsTableBody.appendChild(row);
+  });
+}
+
+
+
+
+  function getRepliesForPrompt(prompt) {
+    return chatData.filter(entry =>
+      entry.prompt.toLowerCase() === prompt.toLowerCase() && entry.reply
+    );
+  }
+
+  function pickWeightedRandom(replies) {
+    const total = replies.reduce((sum, r) => sum + r.points, 0);
+    let rand = Math.random() * total;
+    for (const r of replies) {
+      if (rand < r.points) return r.reply;
+      rand -= r.points;
+    }
+    return replies[0].reply;
+  }
+
+  function getRandomKnownPrompt() {
+    const prompts = [...new Set(chatData.map(e => e.prompt))];
+    if (prompts.length === 0) return "I know nothing yet.";
+    const idx = Math.floor(Math.random() * prompts.length);
+    return prompts[idx];
+  }
+
+  sendBtn.onclick = () => {
+    const inputRaw = userInput.value.trim();
+    if (!inputRaw) return;
+    const input = inputRaw.toLowerCase();
+
+    addMessage("You", inputRaw);
+
+    if (lastBotReply && lastBotReply.toLowerCase() !== input) {
+      const nullRow = chatData.find(e =>
+        e.prompt.toLowerCase() === lastBotReply.toLowerCase() && e.reply === null
+      );
+      if (nullRow) {
+        nullRow.reply = inputRaw;
+        nullRow.points = 1;
+      } else {
+        const existing = chatData.find(e =>
+          e.prompt.toLowerCase() === lastBotReply.toLowerCase() && e.reply === inputRaw
+        );
+        if (existing) {
+          existing.points += 1;
+        } else {
+          chatData.push({ prompt: lastBotReply, reply: inputRaw, points: 1 });
+        }
+      }
+    }
+
+    const replies = getRepliesForPrompt(input);
+    let botReply;
+
+    if (replies.length > 0) {
+      botReply = pickWeightedRandom(replies);
+    } else {
+      const hasNull = chatData.some(e =>
+        e.prompt.toLowerCase() === input && e.reply === null
+      );
+      const hasAny = chatData.some(e =>
+        e.prompt.toLowerCase() === input
+      );
+      if (!hasNull && !hasAny) {
+        chatData.push({ prompt: inputRaw, reply: null, points: 0 });
+      }
+
+      botReply = getRandomKnownPrompt();
+    }
+
+    addMessage("Bot", botReply);
+    lastBotReply = botReply;
+
+    userInput.value = '';
+    updateStats();
+  };
+</script>
+
+
+</body>
+</html>
