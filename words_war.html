@@ -64,7 +64,7 @@ animation: shake 0.2s;
 #word-history {
 padding: 4px;
 height: 150px;
-overflow-y: auto;
+overflow-y: scroll;
 -webkit-overflow-scrolling: touch;
 touch-action: auto;
 border: 1px solid #ccc;
@@ -231,7 +231,9 @@ return letter.classList.contains("dead") ? null : letter;
 function addWordToHistory(source, word) {
 const li = document.createElement("li");
 li.innerHTML = `<strong>${source}:</strong> ${word}`;
-document.getElementById("word-history").appendChild(li);
+const history = document.getElementById("word-history");
+history.appendChild(li);
+history.scrollTop = history.scrollHeight;
 }
 
 function killLetter(container) {
