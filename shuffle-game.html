@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Shuffle Game</title>
+<style>
+body {
+  text-align: center;
+}
+#gamePanel {
+  display: flex;
+  justify-content: center;
+}
+#gamePanel div {
+  font-size: 100px;
+}
+</style>
+</head>
+<body>
+Total cash spend: <span id="totalSpend">0</span>
+
+<div id="gamePanel">
+  <div>❤️</div>
+  <div>❤️</div>
+  <div>❤️</div>
+</div>
+
+<div id="resultText">Load, Bet/Spin</div><br>
+
+<div>Bet: <input id="betInput" type="number" min="1" value="1" /></div>
+<button id="betBtn">Bet / Spin</button><br><br>
+
+Current cash: <span id="currentCash">0</span><br>
+<button id="loadBtn">Load 100</button><br><br>
+
+<div>Happy Meter: <span id="happyMeter">100</span></div>
+<div>Sweet Spot: <span id="sweetSpot">75</span></div>
+
+<script>
+const symbols = ['❤️', '♠️', '♣️', '♦️'];
+const gamePanel = document.getElementById('gamePanel');
+const totalSpendSpan = document.getElementById('totalSpend');
+const currentCashSpan = document.getElementById('currentCash');
+const loadBtn = document.getElementById('loadBtn');
+const betInput = document.getElementById('betInput');
+const betBtn = document.getElementById('betBtn');
+const resultText = document.getElementById('resultText');
+
+const happyMeterSpan = document.getElementById('happyMeter');
+const sweetSpotSpan = document.getElementById('sweetSpot');
+
+let totalSpend = 0;
+let currentCash = 0;
+
+let happymeter = 100;
+let sweetspot = 90;
+const lowestsweetspot = 25;
+
+happyMeterSpan.textContent = happymeter;
+sweetSpotSpan.textContent = sweetspot;
+
+loadBtn.onclick = () => {
+  currentCash += 100;
+  currentCashSpan.textContent = currentCash;
+  resultText.textContent = 'Loaded 100';
+};
+
+betBtn.onclick = () => {
+  let bet = parseInt(betInput.value);
+  if (isNaN(bet) || bet <= 0) {
+    resultText.textContent = 'Enter a valid bet amount.';
+    return;
+  }
+  if (bet > currentCash) {
+    resultText.textContent = 'Not enough cash to bet that amount.';
+    return;
+  }
+
+  betBtn.disabled = true;
+
+  currentCash -= bet;
+  totalSpend += bet;
+  currentCashSpan.textContent = currentCash;
+  totalSpendSpan.textContent = totalSpend;
+  resultText.textContent = 'Spinning...';
+
+  let intervals = [];
+  const duration = 1000;
+  const shuffleSpeed = 50;
+  const slots = [...gamePanel.children];
+
+  slots.forEach((slot, idx) => {
+    intervals[idx] = setInterval(() => {
+      const randIndex = Math.floor(Math.random() * symbols.length);
+      slot.textContent = symbols[randIndex];
+    }, shuffleSpeed);
+  });
+
+  setTimeout(() => {
+    intervals.forEach(interval => clearInterval(interval));
+    const finalSymbols = slots.map(slot => slot.textContent);
+
+    const rigChance = 0.75;
+	const isRigged = (happymeter < sweetspot) && ((bet * 2) <= totalSpend * (sweetspot / 100)) && (Math.random() < rigChance);
+
+    if (isRigged) {
+      const winSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+      slots.forEach(slot => slot.textContent = winSymbol);
+      sweetspot = Math.max(lowestsweetspot, sweetspot - 1);
+      sweetSpotSpan.textContent = sweetspot;
+    }
+
+    const updatedSymbols = slots.map(slot => slot.textContent);
+
+    if (updatedSymbols[0] === updatedSymbols[1] && updatedSymbols[1] === updatedSymbols[2]) {
+      const winnings = bet * 2;
+      currentCash += winnings;
+      totalSpend -= winnings;
+      if (totalSpend < 0) totalSpend = 0;
+      currentCashSpan.textContent = currentCash;
+      totalSpendSpan.textContent = totalSpend;
+      happymeter += 1;
+      resultText.textContent = `You won ${winnings}!`;
+    } else {
+      happymeter -= 1;
+      resultText.textContent = 'You lost! Try again.';
+    }
+    happyMeterSpan.textContent = happymeter;
+    betBtn.disabled = false;
+  }, duration);
+};
+
+</script>
+
+</body>
+</html>
