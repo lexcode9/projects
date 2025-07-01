@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Defense Shooter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+      justify-content: center;
+    }
+    #stage {
+      display: grid;
+      grid-template-columns: repeat(5, 60px);
+      width: fit-content;
+      height: 500px;
+      border: 1px solid;
+    }
+    #attackers {
+      display: grid;
+      grid-template-columns: repeat(5, 60px);
+      width: fit-content;
+    }
+    .cell {
+      border: 1px solid;
+      width: 60px;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      font-size: 2rem;
+      user-select: none;
+      cursor: pointer;
+    }
+    #attackers .cell {
+      height: 60px;
+    }
+    .zombie, .projectile {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      user-select: none;
+      pointer-events: none;
+    }
+    .zombie {
+      top: 0;
+      font-size: 2rem;
+    }
+    .projectile {
+      bottom: 0;
+      font-size: 1rem; /* Half the size */
+    }
+    .selected {
+      outline: 3px solid yellow;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="stage">
+    <div class="cell"></div>
+    <div class="cell"></div>
+    <div class="cell"></div>
+    <div class="cell"></div>
+    <div class="cell"></div>
+  </div>
+
+  <div id="attackers">
+    <div class="cell">👮‍♂️</div>
+    <div class="cell">👩‍🚒</div>
+    <div class="cell">👨‍🍳</div>
+    <div class="cell">👨‍⚕️</div>
+    <div class="cell">👨‍🔧</div>
+  </div>
+
+<script>
+  const stage = document.getElementById('stage');
+  const cells = stage.querySelectorAll('.cell');
+  const attackersPanel = document.getElementById('attackers');
+  const attackers = attackersPanel.querySelectorAll('.cell');
+
+  // Balanced attacker stats
+  let attackerStats = [
+    { name: 'Police', dmg: 5, attackDelay: 2, missile: '⬤', counter: 0 },
+    { name: 'Firefighter', dmg: 25, attackDelay: 20, missile: '🔥', counter: 0 },
+    { name: 'Chef', dmg: 10, attackDelay: 10, missile: '🍗', counter: 0 },
+    { name: 'Doctor', dmg: 5, attackDelay: 10, missile: '💊', counter: 0 },
+    { name: 'Engineer', dmg: 5, attackDelay: 5, missile: '🔧', counter: 0 }
+  ];
+
+	const enemyTypes = [
+	  { name: "Zombie", emoji: "🧟‍♂️", hp: 75 },
+	  { name: "Alien", emoji: "👾", hp: 100 },
+	  { name: "Skeleton", emoji: "💀", hp: 25 },
+	  { name: "Ghost", emoji: "👻", hp: 10 },
+	  { name: "Robot", emoji: "🤖", hp: 150 }
+	];
+
+  // --- Swapping logic ---
+  let selectedIndex = null;
+
+  attackers.forEach((cell, index) => {
+    cell.addEventListener('click', () => {
+      if (selectedIndex === null) {
+        selectedIndex = index;
+        cell.classList.add('selected');
+      } else if (selectedIndex === index) {
+        // Cancel selection
+        attackers[selectedIndex].classList.remove('selected');
+        selectedIndex = null;
+      } else {
+        // Swap emojis
+        const tempEmoji = attackers[selectedIndex].innerHTML;
+        attackers[selectedIndex].innerHTML = attackers[index].innerHTML;
+        attackers[index].innerHTML = tempEmoji;
+
+        // Swap stats
+        const tempStat = attackerStats[selectedIndex];
+        attackerStats[selectedIndex] = attackerStats[index];
+        attackerStats[index] = tempStat;
+
+        // Clear selection
+        attackers[selectedIndex].classList.remove('selected');
+        selectedIndex = null;
+      }
+    });
+  });
+
+  function createZombie() {
+  const laneIndex = Math.floor(Math.random() * cells.length);
+  const cell = cells[laneIndex];
+
+  const type = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+
+  const zombie = document.createElement('div');
+  zombie.classList.add('zombie');
+  zombie.textContent = type.emoji;
+  zombie.style.top = '0px';
+  zombie.dataset.hp = type.hp;
+  zombie.dataset.name = type.name;
+
+  cell.appendChild(zombie);
+
+  let pos = 0;
+  const maxPos = cell.clientHeight - zombie.clientHeight;
+  const speed = 2;
+
+  const interval = setInterval(() => {
+    pos += speed;
+    if (pos >= maxPos) {
+      clearInterval(interval);
+      zombie.remove();
+    } else {
+      zombie.style.top = pos + 'px';
+    }
+  }, 50);
+
+  zombie._interval = interval;
+}
+
+
+  class Projectile {
+    constructor(laneIndex, stats) {
+      this.stats = stats;
+      this.laneIndex = laneIndex;
+      this.cell = cells[laneIndex];
+      this.elem = document.createElement('div');
+      this.elem.classList.add('projectile');
+      this.elem.textContent = stats.missile;
+      this.pos = 0;
+      this.speed = 8;
+      this.active = true;
+
+      this.elem.style.bottom = this.pos + 'px';
+      this.cell.appendChild(this.elem);
+
+      this.interval = setInterval(() => this.moveUp(), 30);
+    }
+
+    moveUp() {
+      if (!this.active) return;
+      this.pos += this.speed;
+      if (this.pos > this.cell.clientHeight) {
+        this.destroy();
+        return;
+      }
+      this.elem.style.bottom = this.pos + 'px';
+
+      const zombies = this.cell.querySelectorAll('.zombie');
+      zombies.forEach(zombie => {
+        const zTop = parseFloat(zombie.style.top);
+        const zHeight = zombie.clientHeight;
+        if (zTop + zHeight > this.cell.clientHeight - this.pos - 10) {
+          let hp = parseInt(zombie.dataset.hp);
+          hp -= this.stats.dmg;
+          if (hp <= 0) {
+            clearInterval(zombie._interval);
+            zombie.remove();
+          } else {
+            zombie.dataset.hp = hp;
+          }
+          this.destroy();
+        }
+      });
+    }
+
+    destroy() {
+      this.active = false;
+      clearInterval(this.interval);
+      this.elem.remove();
+    }
+  }
+
+  function attackersShoot() {
+    attackerStats.forEach((stats, i) => {
+      stats.counter++;
+      if (stats.counter >= stats.attackDelay) {
+        const zombies = cells[i].querySelectorAll('.zombie');
+        if (zombies.length > 0) {
+          new Projectile(i, stats);
+        }
+        stats.counter = 0;
+      }
+    });
+  }
+
+  setInterval(createZombie, 2000);
+  setInterval(attackersShoot, 100);
+</script>
+
+</body>
+</html>
