@@ -1,0 +1,234 @@
+<!-- 
+Possible improvements
+** More hair variaty
+** Improve forehead location and rotation
+** Add adjustment sliders
+** Improve code reusability
+
+Possible Features
+** Custom text
+** Upload hair
+** Screen shot
+** Random text
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cam Filter</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+  }
+
+  #container {
+    position: relative;
+    width: 240px;
+    height: 320px;
+  }
+
+  #video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1); /* Mirror webcam */
+  }
+
+  #imageOnTop {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  h1{
+    display: block;
+    color: white;
+  }
+</style>
+
+</head>
+<body>
+  <div id="container">
+    <h1>KAKAROOOOOOT!</h1>
+    <video id="video" autoplay muted playsinline></video>
+  </div>
+
+  <!-- TensorFlow.js and Face API -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.7.4/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+  <script>
+  const video = document.getElementById('video');
+  const container = document.getElementById('container');
+
+  // Forehead
+  const sayan = "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/f18ddbba-4acf-46e1-8a44-9f48b5d9f91a/de6poag-50cad1c1-0fbe-4df1-833c-35fbd3d3af25.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2YxOGRkYmJhLTRhY2YtNDZlMS04YTQ0LTlmNDhiNWQ5ZjkxYVwvZGU2cG9hZy01MGNhZDFjMS0wZmJlLTRkZjEtODMzYy0zNWZiZDNkM2FmMjUuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.wxjxDK3I6gHXmoRbMi9yZttBTWcmjuv05-DNyrxO0n4"
+  const normal = "https://cdn.pixabay.com/photo/2023/03/27/17/34/hair-7881277_1280.png"
+  const forehead = document.createElement('img');
+  const sound1 = new Audio("https://www.myinstants.com/media/sounds/saiyan.mp3");
+  // https://www.myinstants.com/media/sounds/vegeta-guitar.mp3
+  // https://www.myinstants.com/media/sounds/big-fan-of-the-government.mp3
+  const sound3 = new Audio("https://www.myinstants.com/media/sounds/vegeta-guitar.mp3")
+
+  sound3.volume = 0.8
+  sound1.volume = 0.4
+
+  forehead.src = normal; // image link
+  forehead.id = 'imageOnTop';
+  forehead.style.position = 'absolute';
+  forehead.style.width = '200px';
+  forehead.style.height = '200px';
+  forehead.style.pointerEvents = 'none';
+  container.appendChild(forehead);
+
+  const overlay = document.createElement('img');
+  overlay.src = sayan; // image link
+  overlay.id = 'overlay';
+  overlay.style.position = 'absolute';
+  overlay.style.width = '500';
+  overlay.style.height = '1300px';
+  overlay.style.pointerEvents = 'none';
+  overlay.style.left = -50
+  overlay.style.top = -100
+  overlay.style.zIndex = 99
+  container.appendChild(overlay);
+
+
+  // Start camera
+  async function startCamera() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 240, height: 320 }
+      });
+      video.srcObject = stream;
+    } catch (err) {
+      alert('Camera error: ' + err);
+    }
+  }
+
+  // Load models
+  async function loadModels() {
+    const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+    await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
+    await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
+  }
+
+  function mirrorX(x, videoWidth, containerWidth) {
+    return containerWidth - (x * containerWidth / videoWidth);
+  }
+
+  function rumble(element, duration = 500, intensity = 5,baseTransform = '') {
+  const start = performance.now();
+
+  function animateRumble(time) {
+      const elapsed = time - start;
+      if (elapsed > duration) {
+        element.style.transform = baseTransform;
+        return;
+      }
+
+      const x = (Math.random() - 0.5) * intensity * 2;
+      const y = (Math.random() - 0.5) * intensity * 2;
+
+      element.style.transform = `${baseTransform} translate(${x}px, ${y}px)`;
+      requestAnimationFrame(animateRumble);
+    }
+    const originalTransform = element.style.transform || '';
+    requestAnimationFrame(animateRumble);
+  }
+
+  async function detectLoop() {
+    const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.5 });
+    const result = await faceapi.detectSingleFace(video, options).withFaceLandmarks(true).withFaceExpressions();
+    
+    if (result) {
+      // Gets emotion
+      const { expressions } = result
+      const bestEmotion = Object.entries(expressions)
+        .reduce((prev, current) => current[1] > prev[1] ? current : prev)[0]
+
+      const l_brow_res = result.landmarks.getLeftEyeBrow()[3]; // left_brow
+      const r_brow_res = result.landmarks.getRightEyeBrow()[3]; // right brow
+
+      const browCenter = {
+        x: (l_brow_res.x + r_brow_res.x) / 2,
+        y: (l_brow_res.y + r_brow_res.y) / 2
+      };
+
+      const deltaX = r_brow_res.x - l_brow_res.x;
+      const deltaY = r_brow_res.y - l_brow_res.y;
+      const angle = Math.atan2(deltaY, deltaX); // radians
+
+      const normalX = -Math.sin(angle);
+      const normalY = Math.cos(angle);
+
+      const foreheadDistance = -10;
+      const foreheadPoint = {
+        x: browCenter.x + normalX * foreheadDistance,
+        y: browCenter.y + normalY * foreheadDistance
+      };
+
+      const mirroredX = mirrorX(foreheadPoint.x, video.videoWidth, container.clientWidth);
+      const scaledY = foreheadPoint.y * container.clientHeight / video.videoHeight;
+
+      const angleDegrees = (angle * (180 / Math.PI)) * -1;
+      forehead.style.transform = `rotate(${angleDegrees}deg)`;
+      forehead.style.transformOrigin = 'center center';
+
+      forehead.style.left = `${mirroredX - 100}px`;
+      forehead.style.top = `${scaledY - 90}px`;
+
+      overlay.style.left = `${mirroredX - 590}px`;
+      overlay.style.top = `${scaledY - 780}px`;
+
+      if(bestEmotion == "angry"){
+        forehead.style.filter = 'sepia(1) saturate(20) hue-rotate(35deg) brightness(4.2)'
+        overlay.style.display = "block"
+        rumble(video, 500, 6, 'scaleX(-1)');
+
+
+        hasPlayedAngrySound = true;
+        sound1.play()
+        //sound2.play()
+        sound3.play()
+
+        
+      }else{
+        forehead.style.filter = ""
+        overlay.style.display = "none"
+        sound1.pause()
+        sound1.currentTime = 0
+        //sound2.pause()
+        //sound2.currentTime = 0
+        sound3.pause()
+        sound3.currentTime = 0
+      }
+    }
+
+    requestAnimationFrame(detectLoop);
+  }
+
+  async function init() {
+    await loadModels();
+    await video.play();
+    detectLoop();
+  }
+
+  video.onloadedmetadata = init;
+  startCamera();
+  </script>
+
+</body>
+</html>
