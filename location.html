@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GPS Location & Map with Center Button</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+
+<center>
+  <h2>Your Current Location</h2>
+  <div id="status">Waiting for location...</div>
+  <div id="map" style="width: 90vw; height: 70vh;"></div>
+  <button id="centerBtn" style="margin-top:10px;">Center</button>
+</center>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const status = document.getElementById('status');
+  const centerBtn = document.getElementById('centerBtn');
+  let map, marker, currentLatLng;
+
+  map = L.map('map');
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18
+  }).addTo(map);
+
+  let firstFix = true;
+
+  function onLocationFound(e) {
+    currentLatLng = e.latlng;
+    status.textContent = `Latitude: ${currentLatLng.lat.toFixed(5)}, Longitude: ${currentLatLng.lng.toFixed(5)}`;
+
+    if (!marker) {
+      marker = L.marker(currentLatLng).addTo(map);
+    } else {
+      marker.setLatLng(currentLatLng);
+    }
+
+    if (firstFix) {
+      map.setView(currentLatLng, 15);
+      firstFix = false;
+    }
+  }
+
+  function onLocationError(e) {
+    status.textContent = 'Could not get your location: ' + e.message;
+  }
+
+  map.locate({watch: true, setView: false, maxZoom: 16});
+  map.on('locationfound', onLocationFound);
+  map.on('locationerror', onLocationError);
+
+  centerBtn.onclick = function() {
+    if (currentLatLng) {
+      map.setView(currentLatLng, 15);
+    }
+  };
+</script>
+
+</body>
+</html>
