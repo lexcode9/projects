@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Speech to Text - Hold to Talk</title>
+</head>
+<body>
+
+<center>
+  <h2>Hold to Talk Speech to Text</h2>
+  <button id="talkBtn" style="width:150px; height:50px;">Hold to Talk</button>
+  <div id="interim" style="font-style: italic; color: gray; margin-top: 15px; height: 20px;"></div>
+  <div id="output" style="margin-top: 15px; max-width: 400px; text-align: left;"></div>
+  <div id="error" style="color: red; margin-top: 10px;"></div>
+</center>
+
+<script>
+  const talkBtn = document.getElementById('talkBtn');
+  const interim = document.getElementById('interim');
+  const output = document.getElementById('output');
+  const error = document.getElementById('error');
+
+  let recognition;
+  let isHolding = false;
+  let tempTranscript = '';
+  let sentences = [];
+
+  function initRecognition() {
+    try {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) throw 'SpeechRecognition API not supported';
+      recognition = new SpeechRecognition();
+    } catch (e) {
+      error.textContent = 'SpeechRecognition API not supported in this browser.';
+      return;
+    }
+
+    recognition.lang = 'en-US';
+    recognition.continuous = true;         // Keep listening forever
+    recognition.interimResults = true;     // Get interim results
+
+    recognition.onresult = (event) => {
+      // Combine all results from this event
+      let transcript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+
+      if (isHolding) {
+        // While holding button, show and accumulate transcript live
+        tempTranscript = transcript;
+        interim.textContent = tempTranscript;
+      } else {
+        // Not holding, ignore transcript and clear interim display
+        interim.textContent = '';
+        tempTranscript = '';
+      }
+    };
+
+    recognition.onerror = (event) => {
+      error.textContent = 'Recognition error: ' + event.error;
+    };
+
+    recognition.onend = () => {
+      // Auto restart recognition to listen forever
+      recognition.start();
+    };
+
+    // Start listening once on load (request permission here)
+    recognition.start();
+  }
+
+  initRecognition();
+
+  // When button pressed, start capturing
+  talkBtn.addEventListener('mousedown', () => {
+    isHolding = true;
+    tempTranscript = '';
+    interim.textContent = '';
+  });
+
+  talkBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    isHolding = true;
+    tempTranscript = '';
+    interim.textContent = '';
+  });
+
+  // When button released, save and clear
+  function releaseHandler() {
+    if (!isHolding) return;
+    isHolding = false;
+    if (tempTranscript.trim() !== '') {
+      const timestamp = new Date().toLocaleTimeString();
+      const entry = `[${timestamp}] ${tempTranscript.trim()}`;
+      sentences.push(entry);
+
+      const p = document.createElement('p');
+      p.textContent = entry;
+      output.appendChild(p);
+    }
+    tempTranscript = '';
+    interim.textContent = '';
+  }
+
+  talkBtn.addEventListener('mouseup', releaseHandler);
+  talkBtn.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    releaseHandler();
+  });
+  talkBtn.addEventListener('touchcancel', (e) => {
+    e.preventDefault();
+    releaseHandler();
+  });
+
+  // Prevent scrolling on touchmove
+  talkBtn.addEventListener('touchmove', (e) => e.preventDefault());
+</script>
+
+</body>
+</html>
