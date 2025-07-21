@@ -1,0 +1,154 @@
+<html>
+<body>
+    <center>
+        <p id="question">Your question will appear here.</p>
+        <button id="button1">Button 1</button><br>
+        <button id="button2">Button 2</button><br>
+        <button id="button3">Button 3</button><br>
+        <button id="button4">Button 4</button><br>
+        <button id="button5">Button 5</button><br>
+    </center>
+</body>
+
+<script>
+const data = [
+    [
+        "How do you prefer to approach challenges?",
+        "I like breaking down complex problems into smaller parts.",
+        "I enjoy setting a clear plan and working step by step to reach a goal.",
+        "I prefer collaborating with others to solve problems together.",
+        "I focus on understanding the needs of others and providing solutions.",
+        "I like thinking outside the box to find creative solutions."
+    ],
+    [
+        "What do you enjoy most about your work?",
+        "Finding innovative solutions to technical problems.",
+        "Leading projects and driving results.",
+        "Helping others and making a positive impact.",
+        "Improving patient care and making a difference in people's lives.",
+        "Expressing creativity and exploring new ideas."
+    ],
+    [
+        "What kind of tasks do you enjoy the most?",
+        "Working with data and optimizing systems.",
+        "Managing budgets, resources, and making strategic decisions.",
+        "Directly helping people and solving their problems.",
+        "Providing healthcare solutions and improving well-being.",
+        "Designing new products or artistic concepts."
+    ],
+    [
+        "How do you prefer to work with others?",
+        "In a structured environment where tasks are clearly defined.",
+        "As part of a team that aims to reach business goals.",
+        "In a team where everyone supports and helps each other.",
+        "Collaborating to provide care and ensure patient safety.",
+        "In a creative team where ideas are freely shared and explored."
+    ],
+    [
+        "Which of the following best describes your ideal work environment?",
+        "A fast-paced environment focused on technological innovation.",
+        "A competitive, results-oriented environment where you can lead.",
+        "A supportive and nurturing environment focused on helping people.",
+        "A healthcare-focused setting where you can make a tangible difference.",
+        "A dynamic, creative environment where innovation is encouraged."
+    ],
+    [
+        "What motivates you the most at work?",
+        "Solving complex problems and creating technical solutions.",
+        "Achieving goals and seeing the impact of your decisions.",
+        "Helping others and making a meaningful difference in their lives.",
+        "Improving health outcomes and contributing to patient care.",
+        "Expressing creativity and bringing new ideas to life."
+    ],
+    [
+        "How do you deal with problems?",
+        "By researching and analyzing data to find the best solution.",
+        "By evaluating the business impact and making strategic decisions.",
+        "By talking with others and finding a solution together.",
+        "By considering the physical and emotional needs of others.",
+        "By thinking outside the box and looking for creative alternatives."
+    ],
+    [
+        "What role do you usually take in group settings?",
+        "The problem solver who looks for logical and efficient solutions.",
+        "The leader who sets goals and motivates others to reach them.",
+        "The supporter who helps guide others through their challenges.",
+        "The caregiver who ensures everyone’s health and well-being.",
+        "The creative thinker who inspires new ideas and approaches."
+    ],
+    [
+        "How do you handle challenges in a project?",
+        "By applying technical knowledge and optimizing processes.",
+        "By leading and organizing tasks to ensure goals are met.",
+        "By offering support to those who need it and working as a team.",
+        "By addressing issues related to health and well-being directly.",
+        "By exploring creative solutions and thinking innovatively."
+    ],
+    [
+        "What do you value the most in your career?",
+        "The ability to innovate and improve systems with technology.",
+        "The opportunity to lead and create a lasting impact.",
+        "The ability to help and make a difference in people’s lives.",
+        "The ability to improve the health and well-being of individuals.",
+        "The opportunity to express creativity and create something new."
+    ]
+];
+
+let technologyPoints = 0;
+let businessPoints = 0;
+let socialServicesPoints = 0;
+let healthPoints = 0;
+let artsPoints = 0;
+
+let currentIndex = 0;
+
+function loadNextQuestion() {
+    if (currentIndex < data.length) {
+        document.getElementById('question').textContent = data[currentIndex][0];
+        document.getElementById('button1').textContent = data[currentIndex][1];
+        document.getElementById('button2').textContent = data[currentIndex][2];
+        document.getElementById('button3').textContent = data[currentIndex][3];
+        document.getElementById('button4').textContent = data[currentIndex][4];
+        document.getElementById('button5').textContent = data[currentIndex][5];
+        currentIndex++;
+    } else {
+        document.getElementById('question').innerHTML = 
+	    'Based on your choices, here are the fields that are most suitable for you.<br><br>' +
+            `Technology: ${technologyPoints}<br>` +
+            `Business: ${businessPoints}<br>` +
+            `Social Services: ${socialServicesPoints}<br>` +
+            `Health: ${healthPoints}<br>` +
+            `Arts: ${artsPoints}`;
+        
+        document.getElementById('button1').style.display = 'none';
+        document.getElementById('button2').style.display = 'none';
+        document.getElementById('button3').style.display = 'none';
+        document.getElementById('button4').style.display = 'none';
+        document.getElementById('button5').style.display = 'none';
+    }
+}
+document.getElementById('button1').addEventListener('click', function() {
+    technologyPoints++;
+    loadNextQuestion();
+});
+document.getElementById('button2').addEventListener('click', function() {
+    businessPoints++;
+    loadNextQuestion();
+});
+document.getElementById('button3').addEventListener('click', function() {
+    socialServicesPoints++;
+    loadNextQuestion();
+});
+document.getElementById('button4').addEventListener('click', function() {
+    healthPoints++;
+    loadNextQuestion();
+});
+document.getElementById('button5').addEventListener('click', function() {
+    artsPoints++;
+    loadNextQuestion();
+});
+
+loadNextQuestion();
+
+</script>
+</html>
