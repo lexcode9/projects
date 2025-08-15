@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Event Attendance Demo</title>
+</head>
+<body>
+<center>
+<h1><u>EVENT ATTENDANCE (DEMO)</u></h1>
+<table border="0">
+  <tr>
+    <td><button id="btn1" onclick="showPanel(1)" disabled>Login</button></td>
+    <td><button id="btn2" onclick="showPanel(2)" disabled>Account Management</button></td>
+    <td><button id="btn3" onclick="showPanel(3)" disabled>Event Management (Admin)</button></td>
+    <td><button id="btn4" onclick="showPanel(4)" disabled>Attendance Logs (Admin)</button></td>
+    <td><button id="btn5" onclick="showPanel(5)" disabled>Event Attendance (Student)</button></td>
+  </tr>
+</table>
+
+<table border="1" width="100%">
+  <!-- Panel 1: Login + Register -->
+  <tr id="panel1" bgcolor="gray">
+    <td>
+      <h3>Login</h3>
+      <font color="red">
+        Sample Account: (IT) un/pw: it/it, (Admin) un/pw: admin/admin
+      </font><br>
+      <input type="text" id="loginUser" placeholder="username"><br>
+      <input type="password" id="loginPass" placeholder="password"><br>
+      <input type="submit" value="Login" onclick="login()"><br>
+      <span id="loginError" style="color:red;"></span>
+      <h3>Register (Student)</h3>
+      <input type="text" id="regUser" placeholder="username"><br>
+      <input type="password" id="regPass" placeholder="password"><br>
+      <input type="text" id="regName" placeholder="name"><br>
+      <input type="submit" value="Register" onclick="register()"><br>
+    </td>
+  </tr>
+
+  <!-- Panel 2: Account Management (stacked layout) -->
+  <tr id="panel2" bgcolor="yellow" style="display:none;">
+    <td>
+      <h3>Account Management</h3>
+      User: <span id="displayUser">abc</span>
+      <button onclick="logout()">Logout</button>
+      <hr>
+      ID: <span id="displayID">-</span><br>
+      <input type="text" id="formUser" placeholder="username"><br>
+      <input type="text" id="formPass" placeholder="password"><br>
+      <input type="text" id="formName" placeholder="name"><br>
+      <select id="formLevel">
+        <option value="0">IT</option>
+        <option value="1">Admin</option>
+        <option value="2">Student</option>
+      </select><br><br>
+      <input type="submit" value="Add" onclick="addAccount()">
+      <input type="submit" value="Edit" onclick="editAccount()">
+      <input type="submit" value="Delete" onclick="deleteAccount()">
+      <hr>
+      <table border="1" id="accountTable" width="100%">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Password</th>
+            <th>Name</th>
+            <th>Level</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Panel 3: Event Management -->
+  <tr id="panel3" bgcolor="red" style="display:none;">
+    <td>
+      <h3>Event Management (Admin)</h3>
+      User: <span id="displayUser">abc</span>
+      <button onclick="logout()">Logout</button>
+      <hr>
+      ID: <span id="eventID">-</span><br>
+      <input type="text" id="eventName" placeholder="Event Name"><br>
+      <textarea id="eventDesc" placeholder="Description" rows="3" cols="40"></textarea><br><br>
+      <input type="submit" value="Add Event" onclick="addEvent()">
+      <input type="submit" value="Edit Event" onclick="editEvent()">
+      <input type="submit" value="Delete Event" onclick="deleteEvent()">
+      <hr>
+      <table border="1" id="eventTable" width="100%">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Event Name</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Panel 4: Attendance Logs -->
+  <tr id="panel4" bgcolor="green" style="display:none;">
+    <td>
+      <h3>Attendance Logs (Admin)</h3>
+      User: <span id="displayUser">abc</span>
+      <button onclick="logout()">Logout</button>
+      <hr>
+      <label for="logEventSelect">Select Event:</label><br>
+      <select id="logEventSelect" size="5" style="width: 300px;" onchange="displayAttendanceLogs()"></select>
+      <hr>
+      <table border="1" id="attendanceLogTable" width="100%">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Name</th>
+            <th>Attendance Time</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Panel 5: Student Event Attendance -->
+  <tr id="panel5" bgcolor="lightblue" style="display:none;">
+    <td>
+      <h3>Event Attendance (Student)</h3>
+      User: <span id="displayUser">abc</span>
+      <button onclick="logout()">Logout</button>
+      <hr>
+      <label for="studentEventSelect">Select Event:</label><br>
+      <select id="studentEventSelect" size="5" style="width: 300px;"></select><br><br>
+      <input type="button" value="Attend Event" onclick="attendEvent()">
+    </td>
+  </tr>
+</table>
+</center>
+<script>
+  const accounts = [
+    { id: 0, un: 'it', pw: 'it', name: 'IT Dept', level: 0 },
+    { id: 1, un: 'admin', pw: 'admin', name: 'Administrator', level: 1 }
+  ];
+
+  const events = [];
+  const attendanceLogs = [];
+
+  let currentUser = null;
+  let selectedAccountId = null;
+  let selectedEventId = null;
+
+  function showPanel(n) {
+    for (let i = 1; i <= 5; i++) {
+      document.getElementById('panel' + i).style.display = (i === n) ? 'table-row' : 'none';
+    }
+    if (n === 2) displayAccounts();
+    if (n === 3) displayEvents();
+    if (n === 4) {
+      populateLogEventList();
+      displayAttendanceLogs();
+    }
+    if (n === 5) {
+      populateStudentEventList();
+    }
+  }
+
+  function login() {
+    const username = document.getElementById('loginUser').value.trim();
+    const password = document.getElementById('loginPass').value.trim();
+    const user = accounts.find(acc => acc.un === username && acc.pw === password);
+    if (user) {
+      currentUser = user;
+      document.getElementById('loginError').innerText = '';
+      document.querySelectorAll('#displayUser').forEach(el => el.innerText = user.un);
+      enablePanelForLevel(user.level);
+    } else {
+      document.getElementById('loginError').innerText = 'Invalid credentials';
+    }
+  }
+
+  function register() {
+    const username = document.getElementById('regUser').value.trim();
+    const password = document.getElementById('regPass').value.trim();
+    const name = document.getElementById('regName').value.trim();
+
+    if (!username || !password || !name) {
+      alert('Please complete all fields.');
+      return;
+    }
+    if (accounts.some(a => a.un === username)) {
+      alert('Username already taken');
+      return;
+    }
+    const newId = accounts.length ? accounts[accounts.length - 1].id + 1 : 1;
+    accounts.push({ id: newId, un: username, pw: password, name: name, level: 2 });
+
+    alert('Registration successful. Please login.');
+    document.getElementById('regUser').value = '';
+    document.getElementById('regPass').value = '';
+    document.getElementById('regName').value = '';
+  }
+
+  function enablePanelForLevel(level) {
+    for (let i = 1; i <= 5; i++) {
+      document.getElementById('btn' + i).disabled = true;
+    }
+    switch (level) {
+      case 0:
+        document.getElementById('btn2').disabled = false;
+        showPanel(2);
+        break;
+      case 1:
+        document.getElementById('btn3').disabled = false;
+        document.getElementById('btn4').disabled = false;
+        showPanel(3);
+        break;
+      case 2:
+        document.getElementById('btn5').disabled = false;
+        showPanel(5);
+        break;
+    }
+  }
+
+  function logout() {
+    currentUser = null;
+    selectedAccountId = null;
+    selectedEventId = null;
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginError').innerText = '';
+    for (let i = 1; i <= 5; i++) {
+      document.getElementById('btn' + i).disabled = true;
+    }
+    document.getElementById('btn1').disabled = false;
+    showPanel(1);
+  }
+
+  function displayAccounts() {
+    const tbody = document.querySelector('#accountTable tbody');
+    tbody.innerHTML = '';
+    accounts.forEach(acc => {
+      const row = document.createElement('tr');
+      row.onclick = () => loadAccountToForm(acc.id);
+      row.style.cursor = 'pointer';
+      row.innerHTML = `
+        <td>${acc.id}</td>
+        <td>${acc.un}</td>
+        <td>${acc.pw}</td>
+        <td>${acc.name}</td>
+        <td>${acc.level}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  function loadAccountToForm(id) {
+    const acc = accounts.find(a => a.id === id);
+    if (!acc) return;
+    selectedAccountId = id;
+    document.getElementById('displayID').innerText = acc.id;
+    document.getElementById('formUser').value = acc.un;
+    document.getElementById('formPass').value = acc.pw;
+    document.getElementById('formName').value = acc.name;
+    document.getElementById('formLevel').value = acc.level;
+  }
+
+  function addAccount() {
+    const un = document.getElementById('formUser').value.trim();
+    const pw = document.getElementById('formPass').value.trim();
+    const name = document.getElementById('formName').value.trim();
+    const level = parseInt(document.getElementById('formLevel').value);
+    if (!un || !pw || !name) {
+      alert('Please fill in all fields.');
+      return;
+    }
+    if (accounts.some(a => a.un === un)) {
+      alert('Username already exists');
+      return;
+    }
+    const newId = accounts.length ? accounts[accounts.length - 1].id + 1 : 1;
+    accounts.push({ id: newId, un, pw, name, level });
+    clearAccountForm();
+    displayAccounts();
+  }
+
+  function editAccount() {
+    if (selectedAccountId === null) {
+      alert('Select an account to edit');
+      return;
+    }
+    const acc = accounts.find(a => a.id === selectedAccountId);
+    if (!acc) return;
+    acc.un = document.getElementById('formUser').value.trim();
+    acc.pw = document.getElementById('formPass').value.trim();
+    acc.name = document.getElementById('formName').value.trim();
+    acc.level = parseInt(document.getElementById('formLevel').value);
+    clearAccountForm();
+    displayAccounts();
+  }
+
+  function deleteAccount() {
+    if (selectedAccountId === null) {
+      alert('Select an account to delete');
+      return;
+    }
+    const index = accounts.findIndex(a => a.id === selectedAccountId);
+    if (index !== -1) accounts.splice(index, 1);
+    clearAccountForm();
+    displayAccounts();
+  }
+
+  function clearAccountForm() {
+    selectedAccountId = null;
+    document.getElementById('displayID').innerText = '-';
+    document.getElementById('formUser').value = '';
+    document.getElementById('formPass').value = '';
+    document.getElementById('formName').value = '';
+    document.getElementById('formLevel').value = '0';
+  }
+
+  function displayEvents() {
+    const tbody = document.querySelector('#eventTable tbody');
+    tbody.innerHTML = '';
+    events.forEach(ev => {
+      const row = document.createElement('tr');
+      row.onclick = () => loadEventToForm(ev.id);
+      row.style.cursor = 'pointer';
+      row.innerHTML = `
+        <td>${ev.id}</td>
+        <td>${ev.name}</td>
+        <td>${ev.desc}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  function loadEventToForm(id) {
+    const ev = events.find(e => e.id === id);
+    if (!ev) return;
+    selectedEventId = id;
+    document.getElementById('eventID').innerText = ev.id;
+    document.getElementById('eventName').value = ev.name;
+    document.getElementById('eventDesc').value = ev.desc;
+  }
+
+  function addEvent() {
+    const name = document.getElementById('eventName').value.trim();
+    const desc = document.getElementById('eventDesc').value.trim();
+    if (!name) {
+      alert('Event name required');
+      return;
+    }
+    const newId = events.length ? events[events.length - 1].id + 1 : 1;
+    events.push({ id: newId, name, desc });
+    clearEventForm();
+    displayEvents();
+  }
+
+  function editEvent() {
+    if (selectedEventId === null) {
+      alert('Select event to edit');
+      return;
+    }
+    const ev = events.find(e => e.id === selectedEventId);
+    if (!ev) return;
+    ev.name = document.getElementById('eventName').value.trim();
+    ev.desc = document.getElementById('eventDesc').value.trim();
+    clearEventForm();
+    displayEvents();
+  }
+
+  function deleteEvent() {
+    if (selectedEventId === null) {
+      alert('Select event to delete');
+      return;
+    }
+    const idx = events.findIndex(e => e.id === selectedEventId);
+    if (idx !== -1) {
+      events.splice(idx, 1);
+    }
+    clearEventForm();
+    displayEvents();
+  }
+
+  function clearEventForm() {
+    selectedEventId = null;
+    document.getElementById('eventID').innerText = '-';
+    document.getElementById('eventName').value = '';
+    document.getElementById('eventDesc').value = '';
+  }
+
+  function populateLogEventList() {
+    const select = document.getElementById('logEventSelect');
+    select.innerHTML = '';
+    events.forEach(ev => {
+      const opt = document.createElement('option');
+      opt.value = ev.id;
+      opt.text = ev.name;
+      select.appendChild(opt);
+    });
+  }
+
+  function displayAttendanceLogs() {
+    const selectedId = parseInt(document.getElementById('logEventSelect').value);
+    const tbody = document.querySelector('#attendanceLogTable tbody');
+    tbody.innerHTML = '';
+    const logs = attendanceLogs.filter(log => log.eventId === selectedId);
+    logs.forEach(log => {
+      const acc = accounts.find(a => a.id === log.userId);
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${acc ? acc.un : 'Unknown'}</td>
+        <td>${acc ? acc.name : '-'}</td>
+        <td>${log.timestamp}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  function populateStudentEventList() {
+    const select = document.getElementById('studentEventSelect');
+    select.innerHTML = '';
+    events.forEach(ev => {
+      const opt = document.createElement('option');
+      opt.value = ev.id;
+      opt.text = ev.name;
+      select.appendChild(opt);
+    });
+  }
+
+  function attendEvent() {
+    const selectedId = parseInt(document.getElementById('studentEventSelect').value);
+    if (!currentUser || isNaN(selectedId)) {
+      alert('Please select an event');
+      return;
+    }
+    const alreadyLogged = attendanceLogs.some(log => log.eventId === selectedId && log.userId === currentUser.id);
+    if (alreadyLogged) {
+      alert('Already attended this event');
+      return;
+    }
+    attendanceLogs.push({
+      eventId: selectedId,
+      userId: currentUser.id,
+      timestamp: new Date().toLocaleString()
+    });
+    alert('Attendance recorded');
+  }
+
+  window.onload = function () {
+    document.getElementById('btn1').disabled = false;
+    showPanel(1);
+  };
+</script>
+
+</body>
+</html>
