@@ -4,112 +4,84 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Cam Filter</title>
-<style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #000;
-  }
+  <style>
+    body {
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      min-height: 100vh;
+      margin: 0;
+    }
 
-  #container {
-    position: relative;
-    width: 240px;
-    height: 320px;
-  }
+    #video {
+      width: 90vw;
+      height: auto;
+      object-fit: contain;
+      transform: scaleX(-1);
+    }
 
-  #video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform: scaleX(-1); /* Mirror webcam */
-  }
-
-  #imageOnTop {
-    position: absolute;
-    width: 40px;
-    height: 40px;
-    pointer-events: none;
-    z-index: 10;
-  }
-</style>
-
+    #filter-emoji {
+      position: absolute;
+      font-size: 40px;
+      pointer-events: none;
+      z-index: 10;
+    }
+  </style>
 </head>
 <body>
-  <div id="container">
-    <video id="video" autoplay muted playsinline></video>
-  </div>
-
-  <!-- TensorFlow.js and Face API -->
+  <video id="video" autoplay muted playsinline></video>
+  <span id="filter-emoji">🔴</span>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.7.4/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-
   <script>
-  const video = document.getElementById('video');
-  const container = document.getElementById('container');
+    const video = document.getElementById('video');
+    const filterEmoji = document.getElementById('filter-emoji');
 
-  // Add imageOnTop to follow the nose
-  const imageOnTop = document.createElement('img');
-  imageOnTop.src = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQiHCWaHp0F2ADgwDwnxI1N8kT-FmXP8QBDg&s'; // image link
-  imageOnTop.id = 'imageOnTop';
-  imageOnTop.style.position = 'absolute';
-  imageOnTop.style.width = '40px';
-  imageOnTop.style.height = '40px';
-  imageOnTop.style.pointerEvents = 'none';
-  container.appendChild(imageOnTop);
-
-  // Start camera
-  async function startCamera() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 240, height: 320 }
-      });
-      video.srcObject = stream;
-    } catch (err) {
-      alert('Camera error: ' + err);
-    }
-  }
-
-  // Load models
-  async function loadModels() {
-    const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
-    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-    await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
-  }
-
-  function mirrorX(x, videoWidth, containerWidth) {
-    return containerWidth - (x * containerWidth / videoWidth);
-  }
-
-  async function detectLoop() {
-    const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.5 });
-    const result = await faceapi.detectSingleFace(video, options).withFaceLandmarks(true);
-
-    if (result) {
-      const nose = result.landmarks.getNose()[3]; // nose tip
-      const mirroredX = mirrorX(nose.x, video.videoWidth, container.clientWidth);
-      const scaledY = nose.y * container.clientHeight / video.videoHeight;
-
-      imageOnTop.style.left = `${mirroredX - 20}px`; // center image
-      imageOnTop.style.top = `${scaledY - 20}px`;
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true
+        });
+        video.srcObject = stream;
+      } catch (err) {
+        alert('Camera error: ' + err);
+      }
     }
 
-    requestAnimationFrame(detectLoop);
-  }
+    async function loadModels() {
+      const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
+    }
 
-  async function init() {
-    await loadModels();
-    await video.play();
-    detectLoop();
-  }
+    async function detectLoop() {
+      const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.5 });
+      const result = await faceapi.detectSingleFace(video, options).withFaceLandmarks(true);
 
-  video.onloadedmetadata = init;
-  startCamera();
+      if (result) {
+        const nose = result.landmarks.getNose()[3];
+        const videoRect = video.getBoundingClientRect();
+        
+        const mirroredX = videoRect.width - (nose.x * videoRect.width / video.videoWidth);
+        const scaledY = nose.y * videoRect.height / video.videoHeight;
+
+        filterEmoji.style.left = `${videoRect.left + mirroredX - (filterEmoji.offsetWidth / 2)}px`;
+        filterEmoji.style.top = `${videoRect.top + scaledY - (filterEmoji.offsetHeight / 2)}px`;
+        filterEmoji.style.display = 'block';
+      } else {
+        filterEmoji.style.display = 'none';
+      }
+      requestAnimationFrame(detectLoop);
+    }
+
+    async function init() {
+      await loadModels();
+      await video.play();
+      detectLoop();
+    }
+    
+    video.onloadedmetadata = init;
+    startCamera();
   </script>
-
 </body>
 </html>
