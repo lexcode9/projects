@@ -3,23 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <title>Cam Object Detector</title>
-  <style>
-    body {
-      text-align: center;
-    }
-
-    #video {
-      height: 90vh;
-      width: auto;
-      object-fit: cover;
-    }
-  </style>
 </head>
 <body>
-  <video id="video" autoplay muted playsinline></video>
-  <br>
-  <div id="status"></div>
-  <button id="switchCam">Switch Camera</button>
+  <center>
+    <video id="video" autoplay muted playsinline style="height: 90vh; width: auto;"></video>
+    <br>
+    <div id="status"></div>
+    <button id="switchCam">Switch Camera</button>
+  </center>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
   <script>
