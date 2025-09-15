@@ -3,29 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <title>Cam Object Detector</title>
- <style>
-#video {
-  transform: scaleX(-1);
-}
+  <style>
+    @media (orientation: portrait) {
+      #video {
+        width: 100vw;
+        height: 100vh;
+      }
+    }
 
-@media (orientation: portrait) {
-  #video {
-    width: 100vw;
-    height: 100vh;
-  }
-}
-
-@media (orientation: landscape) {
-  #video {
-    width: 100vh;
-    height: 100vw;
-  }
-}
-</style>
+    @media (orientation: landscape) {
+      #video {
+        width: 100vh;
+        height: 100vw;
+      }
+    }
+  </style>
 </head>
 <body>
   <center>
     <video id="video" autoplay muted playsinline></video><br>
+    <div id="status">Scanning...</div>
     <button id="switchCam">Switch Camera</button>
   </center>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
@@ -40,6 +37,8 @@
     let speaking = false;
     let useFrontCam = true;
     let currentStream;
+    let model;
+    let detectionInterval;
 
     function speak(text) {
       if (speaking || text === lastSpoken) return;
@@ -57,11 +56,11 @@
         currentStream.getTracks().forEach(track => track.stop());
       }
 
-const constraints = {
-  video: {
-    facingMode: useFrontCam ? 'user' : 'environment'
-  }
-};
+      const constraints = {
+        video: {
+          facingMode: useFrontCam ? 'user' : 'environment'
+        }
+      };
 
       try {
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -70,19 +69,29 @@ const constraints = {
 
         video.style.transform = useFrontCam ? 'scaleX(-1)' : 'none';
 
+        video.onloadeddata = () => {
+          if (detectionInterval) clearInterval(detectionInterval);
+          runDetection();
+        };
+
       } catch (e) {
         alert("Could not access camera: " + e);
+        statusDiv.textContent = "Error: Camera access denied.";
       }
     }
 
     async function runDetection() {
-      const model = await cocoSsd.load();
-      setInterval(async () => {
-        statusDiv.textContent = "scanning";
+      if (!model) {
+        statusDiv.textContent = "Status: Loading model...";
+        model = await cocoSsd.load();
+      }
+
+      detectionInterval = setInterval(async () => {
+        statusDiv.textContent = "Status: Scanning...";
         const predictions = await model.detect(video);
         if (predictions.length > 0) {
           const top = predictions[0];
-          statusDiv.textContent = top.class;
+          statusDiv.textContent = `Status: Detected - ${top.class}`;
           speak(top.class);
         }
       }, 2000);
@@ -93,13 +102,7 @@ const constraints = {
       await startCamera();
     });
 
-    startCamera().then(runDetection);
+    startCamera();
   </script>
 </body>
 </html>
-
-
-
-
-
-
