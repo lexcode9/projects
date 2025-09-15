@@ -47,7 +47,7 @@
       if (currentStream) {
         currentStream.getTracks().forEach(track => track.stop());
       }
-      clearInterval(detectionInterval); // Cleanly stop the old loop
+      clearInterval(detectionInterval);
 
       const constraints = {
         video: {
@@ -82,7 +82,7 @@
         const predictions = await model.detect(video);
         if (predictions.length > 0) {
           const top = predictions[0];
-          statusDiv.textContent = `Status: Detected - ${top.class}`;
+          statusDiv.textContent = `Status: ${top.class}`;
           speak(top.class);
         }
       }, 2000);
@@ -97,3 +97,4 @@
   </script>
 </body>
 </html>
+
