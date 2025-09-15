@@ -17,22 +17,23 @@
     const video = document.getElementById('video');
     const statusDiv = document.getElementById('status');
     const switchCamBtn = document.getElementById('switchCam');
-    let lastSpoken = '';
     let speaking = false;
     let useFrontCam = true;
     let currentStream;
     let model;
     let detectionInterval;
+
     function speak(text) {
-      if (speaking || text === lastSpoken) return;
+      if (speaking) return; 
       const msg = new SpeechSynthesisUtterance(text);
       msg.lang = 'en-US';
       msg.rate = 1;
       msg.pitch = 0.9;
       msg.onstart = () => speaking = true;
-      msg.onend = () => { speaking = false; lastSpoken = text; };
+      msg.onend = () => { speaking = false; };
       window.speechSynthesis.speak(msg);
     }
+
     async function startCamera() {
       if (currentStream) {
         currentStream.getTracks().forEach(track => track.stop());
