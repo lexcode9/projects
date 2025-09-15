@@ -4,17 +4,17 @@
   <meta charset="UTF-8" />
   <title>Cam Object Detector</title>
   <style>
-#video {
-  height: 90vh;
-  width: auto;
-  object-fit: cover;
-}
+    #video {
+      height: 90vh;
+      width: auto;
+      object-fit: cover;
+    }
   </style>
 </head>
 <body>
   <center>
     <video id="video" autoplay muted playsinline></video><br>
-    <div id="status">Scanning...</div>
+    <div id="status"></div>
     <button id="switchCam">Switch Camera</button>
   </center>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
@@ -47,6 +47,7 @@
       if (currentStream) {
         currentStream.getTracks().forEach(track => track.stop());
       }
+      clearInterval(detectionInterval); // Cleanly stop the old loop
 
       const constraints = {
         video: {
@@ -62,12 +63,10 @@
         video.style.transform = useFrontCam ? 'scaleX(-1)' : 'none';
 
         video.onloadeddata = () => {
-          if (detectionInterval) clearInterval(detectionInterval);
           runDetection();
         };
 
       } catch (e) {
-        alert("Could not access camera: " + e);
         statusDiv.textContent = "Error: Camera access denied.";
       }
     }
@@ -98,5 +97,3 @@
   </script>
 </body>
 </html>
-
-
