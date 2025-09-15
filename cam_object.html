@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <title>Cam Object Detector</title>
   <style>
+    body {
+      text-align: center;
+    }
+
     #video {
       height: 90vh;
       width: auto;
@@ -12,26 +16,22 @@
   </style>
 </head>
 <body>
-  <center>
-    <video id="video" autoplay muted playsinline></video><br>
-    <div id="status"></div>
-    <button id="switchCam">Switch Camera</button>
-  </center>
+  <video id="video" autoplay muted playsinline></video>
+  <br>
+  <div id="status"></div>
+  <button id="switchCam">Switch Camera</button>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
-
   <script>
     const video = document.getElementById('video');
     const statusDiv = document.getElementById('status');
     const switchCamBtn = document.getElementById('switchCam');
-
     let lastSpoken = '';
     let speaking = false;
     let useFrontCam = true;
     let currentStream;
     let model;
     let detectionInterval;
-
     function speak(text) {
       if (speaking || text === lastSpoken) return;
       const msg = new SpeechSynthesisUtterance(text);
@@ -42,60 +42,49 @@
       msg.onend = () => { speaking = false; lastSpoken = text; };
       window.speechSynthesis.speak(msg);
     }
-
     async function startCamera() {
       if (currentStream) {
         currentStream.getTracks().forEach(track => track.stop());
       }
       clearInterval(detectionInterval);
-
       const constraints = {
         video: {
           facingMode: useFrontCam ? 'user' : 'environment'
         }
       };
-
       try {
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         currentStream = stream;
         video.srcObject = stream;
-
         video.style.transform = useFrontCam ? 'scaleX(-1)' : 'none';
-
         video.onloadeddata = () => {
           runDetection();
         };
-
       } catch (e) {
         statusDiv.textContent = "Error: Camera access denied.";
       }
     }
-
     async function runDetection() {
-  if (!model) {
-    statusDiv.textContent = "Status: Loading model...";
-    model = await cocoSsd.load();
-  }
-
-  detectionInterval = setInterval(async () => {
-    statusDiv.textContent = "Status: Scanning...";
-    const predictions = await model.detect(video);
-    if (predictions.length > 0) {
-      const top = predictions[0];
-      statusDiv.textContent = `Status: ${top.class}`;
-      speak(top.class);
+      if (!model) {
+        statusDiv.textContent = "Status: Loading model...";
+        model = await cocoSsd.load();
+      }
+      detectionInterval = setInterval(async () => {
+        const predictions = await model.detect(video);
+        if (predictions.length > 0) {
+          const top = predictions[0];
+          statusDiv.textContent = `Status: ${top.class}`;
+          speak(top.class);
+        } else {
+          statusDiv.textContent = "Status: Scanning...";
+        }
+      }, 1000);
     }
-  }, 2000);
-}
-
     switchCamBtn.addEventListener('click', async () => {
       useFrontCam = !useFrontCam;
       await startCamera();
     });
-
     startCamera();
   </script>
 </body>
 </html>
-
-
