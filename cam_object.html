@@ -57,13 +57,11 @@
         currentStream.getTracks().forEach(track => track.stop());
       }
 
-      const constraints = {
-        video: {
-          facingMode: useFrontCam ? 'user' : 'environment',
-          width: { ideal: 240 },
-          height: { ideal: 320 }
-        }
-      };
+const constraints = {
+  video: {
+    facingMode: useFrontCam ? 'user' : 'environment'
+  }
+};
 
       try {
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -99,6 +97,7 @@
   </script>
 </body>
 </html>
+
 
 
 
