@@ -72,21 +72,21 @@
     }
 
     async function runDetection() {
-      if (!model) {
-        statusDiv.textContent = "Status: Loading model...";
-        model = await cocoSsd.load();
-      }
+  if (!model) {
+    statusDiv.textContent = "Status: Loading model...";
+    model = await cocoSsd.load();
+  }
 
-      detectionInterval = setInterval(async () => {
-        statusDiv.textContent = "Status: Scanning...";
-        const predictions = await model.detect(video);
-        if (predictions.length > 0) {
-          const top = predictions[0];
-          statusDiv.textContent = `Status: ${top.class}`;
-          speak(top.class);
-        }
-      }, 2000);
+  detectionInterval = setInterval(async () => {
+    statusDiv.textContent = "Status: Scanning...";
+    const predictions = await model.detect(video);
+    if (predictions.length > 0) {
+      const top = predictions[0];
+      statusDiv.textContent = `Status: ${top.class}`;
+      speak(top.class);
     }
+  }, 2000);
+}
 
     switchCamBtn.addEventListener('click', async () => {
       useFrontCam = !useFrontCam;
@@ -97,4 +97,5 @@
   </script>
 </body>
 </html>
+
 
