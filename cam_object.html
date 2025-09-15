@@ -4,11 +4,23 @@
   <meta charset="UTF-8" />
   <title>Cam Object Detector</title>
  <style>
+#video {
+  transform: scaleX(-1);
+}
+
+@media (orientation: portrait) {
   #video {
     width: 100vw;
     height: 100vh;
-    transform: scaleX(-1);
   }
+}
+
+@media (orientation: landscape) {
+  #video {
+    width: 100vh;
+    height: 100vw;
+  }
+}
 </style>
 </head>
 <body>
@@ -87,6 +99,7 @@
   </script>
 </body>
 </html>
+
 
 
 
