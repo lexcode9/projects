@@ -59,7 +59,6 @@
         currentStream = stream;
         video.srcObject = stream;
 
-        // Flip only for front cam
         video.style.transform = useFrontCam ? 'scaleX(-1)' : 'none';
 
       } catch (e) {
@@ -89,4 +88,5 @@
   </script>
 </body>
 </html>
+
 
